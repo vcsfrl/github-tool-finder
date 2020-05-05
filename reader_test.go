@@ -39,10 +39,12 @@ func (this *SearchReaderFixture) Setup() {
 	this.searchReader = NewSearchReader(this.searchConfig, this.output, this.fakeHttpClient)
 }
 
-func (this *SearchReaderFixture) TestRead() {
+func (this *SearchReaderFixture) TestBuildQuery() {
 	this.searchReader.Handle()
-	//request := this.fakeHttpClient.request
-	//this.So(request.URL, should.Equal, "https://api.github.com/search/repositories?q=test1+test2+in:readme+user:test&per_page=200")
+	request := this.fakeHttpClient.request
+	this.So(request.URL.Scheme, should.Equal, "https")
+	this.So(request.URL.Host, should.Equal, "api.github.com")
+	this.So(request.URL.Path, should.Equal, "/search/repositories")
 
 	this.assertQueryString("q", "test1+test2+in:readme+user:test")
 	this.assertQueryString("per_page", strconv.Itoa(this.searchConfig.PerPage))

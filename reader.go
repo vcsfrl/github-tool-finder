@@ -19,21 +19,24 @@ type SearchReader struct {
 }
 
 func (this *SearchReader) Handle() {
-	query := make(url.Values)
-	qualifiers := []string{}
+	request, _ := http.NewRequest("GET", this.buildUrl(), nil)
+	this.client.Do(request)
+}
+
+func (this *SearchReader) buildUrl() string {
+	return fmt.Sprintf("%s?%s", this.filter.Url, this.buildQuery().Encode())
+}
+
+func (this *SearchReader) buildQuery() url.Values {
+	query, parts := make(url.Values), []string{}
 	for _, qualifier := range this.filter.Qualifiers {
-		val := fmt.Sprintf("%s:%s", qualifier.Qualifier, qualifier.Value)
-		qualifiers = append(qualifiers, val)
+		parts = append(parts, fmt.Sprintf("%s:%s", qualifier.Qualifier, qualifier.Value))
 	}
 
-	keywords := strings.Join(append(this.filter.Keywords, qualifiers...), "+")
-
-	query.Set("q", keywords)
+	query.Set("q", strings.Join(append(this.filter.Keywords, parts...), "+"))
 	query.Set("per_page", strconv.Itoa(this.filter.PerPage))
 
-	request, _ := http.NewRequest("GET", fmt.Sprintf("%s?%s", this.filter.Url, query.Encode()), nil)
-
-	this.client.Do(request)
+	return query
 }
 
 func NewSearchReader(filter *RepositorySearchConfig, output chan *Repository, client HTTPClient) *SearchReader {
