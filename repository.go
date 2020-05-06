@@ -10,7 +10,7 @@ type (
 		Value     string
 	}
 	RepositorySearchConfig struct {
-		Url        string
+		Path       string
 		Keywords   []string
 		Qualifiers []RepositorySearchQualifier
 		Sort       RepositorySearchSort
@@ -19,4 +19,6 @@ type (
 )
 
 type Repository struct {
+	Name     string
+	FullName string
 }

@@ -27,7 +27,7 @@ func (this *SearchReaderFixture) Setup() {
 	this.output = make(chan *Repository)
 	this.fakeHttpClient = &FakeHTTPClient{}
 	this.searchConfig = &RepositorySearchConfig{
-		Url:      "https://api.github.com/search/repositories",
+		Path:     "/search/repositories",
 		Keywords: []string{"test1", "test2"},
 		Qualifiers: []RepositorySearchQualifier{
 			{Qualifier: "in", Value: "readme"},

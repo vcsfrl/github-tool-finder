@@ -24,7 +24,7 @@ func (this *SearchReader) Handle() {
 }
 
 func (this *SearchReader) buildUrl() string {
-	return fmt.Sprintf("%s?%s", this.filter.Url, this.buildQuery().Encode())
+	return fmt.Sprintf("%s?%s", this.filter.Path, this.buildQuery().Encode())
 }
 
 func (this *SearchReader) buildQuery() url.Values {
