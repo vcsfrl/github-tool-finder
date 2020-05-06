@@ -1,6 +1,7 @@
 package github_tool_finder
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -24,7 +25,7 @@ func (this AuthenticationClient) Do(request *http.Request) (*http.Response, erro
 	request.URL.Scheme = this.scheme
 	request.URL.Host = this.hostname
 	if "" != this.authToken {
-		request.Header.Set("Authorization", this.authToken)
+		request.Header.Set("Authorization", fmt.Sprintf("bearer %s", this.authToken))
 	}
 	request.Host = this.hostname
 	return this.inner.Do(request)

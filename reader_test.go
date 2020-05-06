@@ -2,11 +2,12 @@ package github_tool_finder
 
 import (
 	"bytes"
+	"io/ioutil"
 	"net/http"
-	"strconv"
 	"testing"
 
 	"github.com/smartystreets/assertions/should"
+
 	"github.com/smartystreets/gunit"
 )
 
@@ -20,42 +21,66 @@ type SearchReaderFixture struct {
 	fakeHttpClient *FakeHTTPClient
 	output         chan *Repository
 	searchReader   *SearchReader
-	searchConfig   *RepositorySearchConfig
 }
 
 func (this *SearchReaderFixture) Setup() {
 	this.output = make(chan *Repository)
 	this.fakeHttpClient = &FakeHTTPClient{}
-	this.searchConfig = &RepositorySearchConfig{
-		Path:     "/search/repositories",
-		Keywords: []string{"test1", "test2"},
-		Qualifiers: []RepositorySearchQualifier{
-			{Qualifier: "in", Value: "readme"},
-			{Qualifier: "user", Value: "test"},
-		},
-		Sort:    RepositorySearchSort{},
-		PerPage: 200,
-	}
-	this.searchReader = NewSearchReader(this.searchConfig, this.output, this.fakeHttpClient)
+
+	this.searchReader = NewSearchReader("test:test test", 10, this.output, this.fakeHttpClient)
 }
 
 func (this *SearchReaderFixture) TestBuildQuery() {
 	this.searchReader.Handle()
 	request := this.fakeHttpClient.request
-	this.So(request.URL.Scheme, should.Equal, "https")
-	this.So(request.URL.Host, should.Equal, "api.github.com")
-	this.So(request.URL.Path, should.Equal, "/search/repositories")
-
-	this.assertQueryString("q", "test1+test2+in:readme+user:test")
-	this.assertQueryString("per_page", strconv.Itoa(this.searchConfig.PerPage))
-}
-
-func (this *SearchReaderFixture) assertQueryString(key, expected string) {
-	query := this.fakeHttpClient.request.URL.Query()
-	this.So(expected, should.Equal, query.Get(key))
+	body, _ := ioutil.ReadAll(request.Body)
+	this.So(string(body), should.Equal, grapqlQueryResult)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const grapqlQueryResult = `{
+  search(query: "test:test test", type: REPOSITORY, first: 10) {
+    repositoryCount
+    edges {
+      node {
+        ... on Repository {
+          description
+          name
+          nameWithOwner
+          url
+          owner {
+            login
+          }
+          forkCount
+          stargazers {
+            totalCount
+          }
+          watchers {
+            totalCount
+          }
+          homepageUrl
+          licenseInfo {
+            name
+          }
+          mentionableUsers {
+            totalCount
+          }
+          mirrorUrl
+          isMirror
+          primaryLanguage {
+            name
+          }
+          parent {
+            name
+          }
+          createdAt
+          updatedAt
+        }
+      }
+    }
+  }
+}`
 
 type FakeHTTPClient struct {
 	request      *http.Request

@@ -60,7 +60,7 @@ func (this *AuthenticationClientFixture) TestMissingToken() {
 }
 
 func (this *AuthenticationClientFixture) assertQueryStringIncludesAuthentication() {
-	this.So(this.inner.request.Header.Get("Authorization"), should.Equal, "authtoken")
+	this.So(this.inner.request.Header.Get("Authorization"), should.Equal, "bearer authtoken")
 
 }
 
