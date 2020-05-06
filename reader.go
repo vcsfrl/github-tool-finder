@@ -17,9 +17,19 @@ type SearchReader struct {
 	number int
 }
 
-func (this *SearchReader) Handle() {
+func (this *SearchReader) Close() error {
+	close(this.output)
+
+	return nil
+}
+
+func (this *SearchReader) Handle() error {
+	defer this.Close()
 	request, _ := http.NewRequest("POST", "", bytes.NewBuffer([]byte(this.buildQl())))
-	this.client.Do(request)
+	response, _ := this.client.Do(request)
+
+	return response.Body.Close()
+
 }
 
 func (this *SearchReader) buildQl() string {
