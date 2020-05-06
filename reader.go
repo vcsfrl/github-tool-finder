@@ -2,6 +2,7 @@ package github_tool_finder
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -27,6 +28,13 @@ func (this *SearchReader) Handle() error {
 	defer this.Close()
 	request, _ := http.NewRequest("POST", "", bytes.NewBuffer([]byte(this.buildQl())))
 	response, _ := this.client.Do(request)
+	decoder := json.NewDecoder(response.Body)
+	result := &SearchResponse{}
+	decoder.Decode(result)
+
+	for _, edge := range result.Data.Search.Edges {
+		this.output <- &edge.Node
+	}
 
 	return response.Body.Close()
 

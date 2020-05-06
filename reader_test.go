@@ -25,13 +25,14 @@ type SearchReaderFixture struct {
 }
 
 func (this *SearchReaderFixture) Setup() {
-	this.output = make(chan *Repository)
+	this.output = make(chan *Repository, 10)
 	this.fakeHttpClient = &FakeHTTPClient{}
 
 	this.searchReader = NewSearchReader("test:test test", 1, this.output, this.fakeHttpClient)
 }
 
 func (this *SearchReaderFixture) TestBuildQuery() {
+	this.fakeHttpClient.Configure(responseBody, 200, nil)
 	this.searchReader.Handle()
 	request := this.fakeHttpClient.request
 	body, _ := ioutil.ReadAll(request.Body)
@@ -41,7 +42,7 @@ func (this *SearchReaderFixture) TestBuildQuery() {
 func (this *SearchReaderFixture) TestReadResponse() {
 	this.fakeHttpClient.Configure(responseBody, 200, nil)
 	this.searchReader.Handle()
-	this.So(<-this.output, should.Equal, getResponseRepository())
+	this.So(<-this.output, should.Resemble, getResponseRepository())
 	this.So(this.fakeHttpClient.responseBody.closed, should.Equal, 1)
 }
 
@@ -91,25 +92,43 @@ func (this *SearchReaderBuffer) Close() error {
 	return nil
 }
 
-func getResponseRepository() Repository {
-	return Repository{
-		Description:      "Test description.",
-		Name:             "testrepo",
-		NameWithOwner:    "testrepo/",
-		Url:              "",
-		Owner:            "",
-		ForkCount:        0,
-		Stargazers:       0,
-		Watchers:         0,
-		HomepageUrl:      "",
-		LicenseInfo:      "",
-		MentionableUsers: 0,
-		MirrorUrl:        "",
-		IsMirror:         false,
-		PrimaryLanguage:  "",
-		Parent:           "",
-		CreatedAt:        time.Time{},
-		UpdatedAt:        time.Time{},
+func getResponseRepository() *Repository {
+
+	created, _ := time.Parse(time.RFC3339, "2015-05-23T21:24:16Z")
+	updated, _ := time.Parse(time.RFC3339, "2020-04-15T20:01:25Z")
+
+	return &Repository{
+		Description:   "Test description.",
+		Name:          "testrepo",
+		NameWithOwner: "testrepo/testrepo",
+		Url:           "https://github.com/testrepo/testrepo",
+		Owner: struct {
+			Login string `json:"login"`
+		}{Login: "testrepo"},
+		ForkCount: 10,
+		Stargazers: struct {
+			TotalCount int64 `json:"totalCount"`
+		}{TotalCount: 10},
+		Watchers: struct {
+			TotalCount int64 `json:"totalCount"`
+		}{TotalCount: 10},
+		HomepageUrl: "testhomepage",
+		LicenseInfo: struct {
+			Name string `json:"name"`
+		}{Name: "testlicense"},
+		MentionableUsers: struct {
+			TotalCount int64 `json:"totalCount"`
+		}{TotalCount: 10},
+		MirrorUrl: "testmirror",
+		IsMirror:  true,
+		PrimaryLanguage: struct {
+			Name string `json:"name"`
+		}{Name: "Go"},
+		Parent: struct {
+			Name string `json:"name"`
+		}{Name: "testparent"},
+		CreatedAt: created,
+		UpdatedAt: updated,
 	}
 }
 
@@ -179,19 +198,21 @@ const responseBody = `{
                         "watchers": {
                             "totalCount": 10
                         },
-                        "homepageUrl": null,
+                        "homepageUrl": "testhomepage",
                         "licenseInfo": {
-                            "name": "Test license"
+                            "name": "testlicense"
                         },
                         "mentionableUsers": {
                             "totalCount": 10
                         },
-                        "mirrorUrl": null,
-                        "isMirror": false,
+                        "mirrorUrl": "testmirror",
+                        "isMirror": true,
                         "primaryLanguage": {
                             "name": "Go"
                         },
-                        "parent": null,
+                        "parent": {
+                            "name": "testparent"
+						},
                         "createdAt": "2015-05-23T21:24:16Z",
                         "updatedAt": "2020-04-15T20:01:25Z"
                     }
