@@ -2,6 +2,7 @@ package github_tool_finder
 
 import (
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -52,6 +53,13 @@ func (this *SearchReaderFixture) TestReadReadError() {
 	this.So(err, should.BeError)
 	this.So(err.Error(), should.Equal, "Bad credentials")
 	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
+}
+
+func (this *SearchReaderFixture) TestReadError() {
+	this.fakeClient.Configure(responseError, 401, errors.New("test error"))
+	err := this.searchReader.Handle()
+	this.So(err, should.BeError)
+	this.So(err.Error(), should.Equal, "test error")
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

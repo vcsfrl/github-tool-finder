@@ -59,6 +59,7 @@ func (this *SearchReader) readRepositories() *SearchResponse {
 func (this *SearchReader) decodeRepositories(reader io.ReadCloser, result *SearchResponse, err error) {
 	if nil != err {
 		result.ErrorMessage = err.Error()
+		return
 	}
 	decoder := json.NewDecoder(reader)
 	err = decoder.Decode(result)
