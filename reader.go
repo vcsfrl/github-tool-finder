@@ -3,7 +3,9 @@ package github_tool_finder
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -26,18 +28,56 @@ func (this *SearchReader) Close() error {
 
 func (this *SearchReader) Handle() error {
 	defer this.Close()
-	request, _ := http.NewRequest("POST", "", bytes.NewBuffer([]byte(this.buildQl())))
-	response, _ := this.client.Do(request)
-	decoder := json.NewDecoder(response.Body)
-	result := &SearchResponse{}
-	decoder.Decode(result)
+	result := this.readRepositories()
+
+	return this.sendResult(result)
+}
+
+func (this *SearchReader) sendResult(result *SearchResponse) error {
+	if "" != result.ErrorMessage {
+		return errors.New(result.ErrorMessage)
+	}
 
 	for _, edge := range result.Data.Search.Edges {
 		this.output <- &edge.Node
 	}
 
-	return response.Body.Close()
+	return nil
+}
 
+func (this *SearchReader) readRepositories() *SearchResponse {
+	result := &SearchResponse{}
+	reader, err := this.repositoryReader()
+	if nil != reader {
+		defer reader.Close()
+	}
+	this.decodeRepositories(reader, result, err)
+
+	return result
+}
+
+func (this *SearchReader) decodeRepositories(reader io.ReadCloser, result *SearchResponse, err error) {
+	if nil != err {
+		result.ErrorMessage = err.Error()
+	}
+	decoder := json.NewDecoder(reader)
+	err = decoder.Decode(result)
+	if nil != err {
+		result.ErrorMessage = err.Error()
+	}
+}
+
+func (this *SearchReader) repositoryReader() (io.ReadCloser, error) {
+	request, err := http.NewRequest("POST", "", bytes.NewBuffer([]byte(this.buildQl())))
+	if nil != err {
+		return nil, err
+	}
+	response, err := this.client.Do(request)
+	if nil != err {
+		return nil, err
+	}
+
+	return response.Body, nil
 }
 
 func (this *SearchReader) buildQl() string {

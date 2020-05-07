@@ -10,7 +10,8 @@ type SearchResponse struct {
 				Node Repository `json:"node"`
 			} `json:"edges"`
 		} `json:"search"`
-	} `json:"data"`
+	} `json:"data,omitempty"`
+	ErrorMessage string `json:"message,omitempty"`
 }
 
 type Repository struct {
@@ -43,6 +44,10 @@ type Repository struct {
 	Parent struct {
 		Name string `json:"name"`
 	} `json:"parent"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+	apiResponse struct {
+		statusCode int
+		message    string
+	}
 }

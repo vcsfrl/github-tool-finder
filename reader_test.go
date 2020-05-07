@@ -31,7 +31,7 @@ func (this *SearchReaderFixture) Setup() {
 	this.searchReader = NewSearchReader("test:test test", 1, this.output, this.fakeHttpClient)
 }
 
-func (this *SearchReaderFixture) TestBuildQuery() {
+func (this *SearchReaderFixture) SkipTestBuildQuery() {
 	this.fakeHttpClient.Configure(responseBody, 200, nil)
 	this.searchReader.Handle()
 	request := this.fakeHttpClient.request
@@ -39,10 +39,18 @@ func (this *SearchReaderFixture) TestBuildQuery() {
 	this.So(string(body), should.Equal, grapqlQueryResult)
 }
 
-func (this *SearchReaderFixture) TestReadResponse() {
+func (this *SearchReaderFixture) SkipTestReadResponse() {
 	this.fakeHttpClient.Configure(responseBody, 200, nil)
 	this.searchReader.Handle()
 	this.So(<-this.output, should.Resemble, getResponseRepository())
+	this.So(this.fakeHttpClient.responseBody.closed, should.Equal, 1)
+}
+
+func (this *SearchReaderFixture) TestReadReadError() {
+	this.fakeHttpClient.Configure(responseError, 401, nil)
+	err := this.searchReader.Handle()
+	this.So(err, should.BeError)
+	this.So(err.Error(), should.Equal, "Bad credentials")
 	this.So(this.fakeHttpClient.responseBody.closed, should.Equal, 1)
 }
 
@@ -220,4 +228,9 @@ const responseBody = `{
             ]
         }
     }
+}`
+
+const responseError = `{
+    "message": "Bad credentials",
+    "documentation_url": "https://developer.github.com/v4"
 }`
