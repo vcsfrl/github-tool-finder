@@ -1,14 +1,13 @@
 package github_tool_finder
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type HTTPClient interface {
@@ -65,25 +64,20 @@ func (this *SearchReader) decodeRepositories(reader io.ReadCloser, result *Searc
 		result.ErrorMessage = err.Error()
 		return
 	}
-
-	res, _ := ioutil.ReadAll(reader)
-	log.Fatal(string(res))
 	decoder := json.NewDecoder(reader)
 	err = decoder.Decode(result)
-
 	if nil != err {
 		result.ErrorMessage = err.Error()
 	}
 }
 
 func (this *SearchReader) repositoryReader() (io.ReadCloser, error) {
-	request, err := http.NewRequest("POST", "", bytes.NewBuffer([]byte(this.buildQl())))
+	request, err := http.NewRequest("POST", "", strings.NewReader(this.buildQl()))
 	if nil != err {
 		return nil, err
 	}
 	response, err := this.client.Do(request)
 
-	log.Fatal(request.URL.String())
 	if nil != err {
 		return nil, err
 	}
@@ -99,45 +93,4 @@ func NewSearchReader(query string, number int, output chan *Repository, client H
 	return &SearchReader{query: query, number: number, output: output, client: client}
 }
 
-const repoSearchQuery = `{
-  search(query: "%s", type: REPOSITORY, first: %d) {
-    repositoryCount
-    edges {
-      node {
-        ... on Repository {
-          description
-          name
-          nameWithOwner
-          url
-          owner {
-            login
-          }
-          forkCount
-          stargazers {
-            totalCount
-          }
-          watchers {
-            totalCount
-          }
-          homepageUrl
-          licenseInfo {
-            name
-          }
-          mentionableUsers {
-            totalCount
-          }
-          mirrorUrl
-          isMirror
-          primaryLanguage {
-            name
-          }
-          parent {
-            name
-          }
-          createdAt
-          updatedAt
-        }
-      }
-    }
-  }
-}`
+const repoSearchQuery = "{\"query\":\"{\\n  search(query: \\\"%s\\\", type: REPOSITORY, first: %s) {\\n    repositoryCount\\n    edges {\\n      node {\\n        ... on Repository {\\n          description\\n          name\\n          nameWithOwner\\n          url\\n          owner {\\n            login\\n          }\\n          forkCount\\n          stargazers {\\n            totalCount\\n          }\\n          watchers {\\n            totalCount\\n          }\\n          homepageUrl\\n          licenseInfo {\\n            name\\n          }\\n          mentionableUsers {\\n            totalCount\\n          }\\n          mirrorUrl\\n          isMirror\\n          primaryLanguage {\\n            name\\n          }\\n          parent {\\n            name\\n          }\\n          createdAt\\n          updatedAt\\n        }\\n      }\\n    }\\n  }\\n}\",\"variables\":{}}"

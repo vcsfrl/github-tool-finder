@@ -21,10 +21,11 @@ func (this AuthenticationClientV4) Do(request *http.Request) (*http.Response, er
 	request.URL.Scheme = "https"
 	request.URL.Host = "api.github.com"
 	request.Host = "api.github.com"
-	request.Header.Set("Accept", "application/json; charset=utf-8")
-	request.URL.Path = "graphql"
+	request.URL.Path = "/graphql"
+	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Content-Type", "application/json")
 	if "" != this.authToken {
-		request.Header.Set("Authorization", fmt.Sprintf("bearer %s", this.authToken))
+		request.Header.Add("Authorization", fmt.Sprintf("bearer %s", this.authToken))
 	}
 
 	return this.inner.Do(request)
