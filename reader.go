@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -64,8 +65,12 @@ func (this *SearchReader) decodeRepositories(reader io.ReadCloser, result *Searc
 		result.ErrorMessage = err.Error()
 		return
 	}
+
+	res, _ := ioutil.ReadAll(reader)
+	log.Fatal(string(res))
 	decoder := json.NewDecoder(reader)
 	err = decoder.Decode(result)
+
 	if nil != err {
 		result.ErrorMessage = err.Error()
 	}
@@ -77,6 +82,8 @@ func (this *SearchReader) repositoryReader() (io.ReadCloser, error) {
 		return nil, err
 	}
 	response, err := this.client.Do(request)
+
+	log.Fatal(request.URL.String())
 	if nil != err {
 		return nil, err
 	}
