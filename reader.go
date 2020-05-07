@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -40,9 +39,8 @@ func (this *SearchReader) sendResult(result *SearchResponse) error {
 	}
 
 	for _, edge := range result.Data.Search.Edges {
-
-		log.Println(edge.Node)
-		this.output <- &edge.Node
+		node := edge.Node
+		this.output <- &node
 	}
 
 	return nil
@@ -93,45 +91,4 @@ func NewSearchReader(query string, number int, output chan *Repository, client H
 	return &SearchReader{query: query, number: number, output: output, client: client}
 }
 
-const repoSearchQuery = `{
-  search(query: "%s", type: REPOSITORY, first: %d) {
-    repositoryCount
-    edges {
-      node {
-        ... on Repository {
-          description
-          name
-          nameWithOwner
-          url
-          owner {
-            login
-          }
-          forkCount
-          stargazers {
-            totalCount
-          }
-          watchers {
-            totalCount
-          }
-          homepageUrl
-          licenseInfo {
-            name
-          }
-          mentionableUsers {
-            totalCount
-          }
-          mirrorUrl
-          isMirror
-          primaryLanguage {
-            name
-          }
-          parent {
-            name
-          }
-          createdAt
-          updatedAt
-        }
-      }
-    }
-  }
-}`
+const repoSearchQuery = "{\"query\":\"{\\n  search(query: \\\"%s\\\", type: REPOSITORY, first: %d) {\\n    repositoryCount\\n    edges {\\n      node {\\n        ... on Repository {\\n          description\\n          name\\n          nameWithOwner\\n          url\\n          owner {\\n            login\\n          }\\n          forkCount\\n          stargazers {\\n            totalCount\\n          }\\n          watchers {\\n            totalCount\\n          }\\n          homepageUrl\\n          licenseInfo {\\n            name\\n          }\\n          mentionableUsers {\\n            totalCount\\n          }\\n          mirrorUrl\\n          isMirror\\n          primaryLanguage {\\n            name\\n          }\\n          parent {\\n            name\\n          }\\n          createdAt\\n          updatedAt\\n        }\\n      }\\n    }\\n  }\\n}\",\"variables\":{}}"

@@ -19,7 +19,7 @@ func main() {
 
 	token, ok := os.LookupEnv("GH_TOKEN")
 	if !ok {
-		fmt.Println("Please specify a github token (env variabl: GH_TOKEN)")
+		fmt.Println("Please specify a github token (env variable: GH_TOKEN)")
 		return
 	}
 
@@ -28,10 +28,12 @@ func main() {
 	nr, _ := strconv.Atoi(os.Args[2])
 
 	reader := github_tool_finder.NewSearchReader(os.Args[1], nr, output, client)
-	err := reader.Handle()
-	if nil != err {
-		log.Fatal(err)
-	}
+	go func() {
+		err := reader.Handle()
+		if nil != err {
+			log.Fatal(err)
+		}
+	}()
 	writer := github_tool_finder.NewWriterHandler(output, os.Stdout)
 	writer.Handle()
 }
