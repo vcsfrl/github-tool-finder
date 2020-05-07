@@ -14,10 +14,10 @@ type HTTPClient interface {
 }
 
 type SearchReader struct {
-	output chan *Repository
 	client HTTPClient
 	query  string
 	number int
+	output chan *Repository
 }
 
 func (this *SearchReader) Close() error {

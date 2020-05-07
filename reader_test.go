@@ -19,39 +19,39 @@ func TestSearchReaderFixture(t *testing.T) {
 type SearchReaderFixture struct {
 	*gunit.Fixture
 
-	fakeHttpClient *FakeHTTPClient
-	output         chan *Repository
-	searchReader   *SearchReader
+	fakeClient   *FakeHTTPClient
+	output       chan *Repository
+	searchReader *SearchReader
 }
 
 func (this *SearchReaderFixture) Setup() {
 	this.output = make(chan *Repository, 10)
-	this.fakeHttpClient = &FakeHTTPClient{}
+	this.fakeClient = &FakeHTTPClient{}
 
-	this.searchReader = NewSearchReader("test:test test", 1, this.output, this.fakeHttpClient)
+	this.searchReader = NewSearchReader("test:test test", 1, this.output, this.fakeClient)
 }
 
-func (this *SearchReaderFixture) SkipTestBuildQuery() {
-	this.fakeHttpClient.Configure(responseBody, 200, nil)
+func (this *SearchReaderFixture) TestBuildQuery() {
+	this.fakeClient.Configure(responseBody, 200, nil)
 	this.searchReader.Handle()
-	request := this.fakeHttpClient.request
+	request := this.fakeClient.request
 	body, _ := ioutil.ReadAll(request.Body)
 	this.So(string(body), should.Equal, grapqlQueryResult)
 }
 
-func (this *SearchReaderFixture) SkipTestReadResponse() {
-	this.fakeHttpClient.Configure(responseBody, 200, nil)
+func (this *SearchReaderFixture) TestReadResponse() {
+	this.fakeClient.Configure(responseBody, 200, nil)
 	this.searchReader.Handle()
 	this.So(<-this.output, should.Resemble, getResponseRepository())
-	this.So(this.fakeHttpClient.responseBody.closed, should.Equal, 1)
+	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
 }
 
 func (this *SearchReaderFixture) TestReadReadError() {
-	this.fakeHttpClient.Configure(responseError, 401, nil)
+	this.fakeClient.Configure(responseError, 401, nil)
 	err := this.searchReader.Handle()
 	this.So(err, should.BeError)
 	this.So(err.Error(), should.Equal, "Bad credentials")
-	this.So(this.fakeHttpClient.responseBody.closed, should.Equal, 1)
+	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -44,10 +44,6 @@ type Repository struct {
 	Parent struct {
 		Name string `json:"name"`
 	} `json:"parent"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-	apiResponse struct {
-		statusCode int
-		message    string
-	}
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
