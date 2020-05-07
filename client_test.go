@@ -49,7 +49,7 @@ func (this *AuthenticationClientFixture) assertRequestConnectionInformation() {
 	this.So(this.inner.request.URL.Scheme, should.Equal, "https")
 	this.So(this.inner.request.URL.Host, should.Equal, "api.github.com")
 	this.So(this.inner.request.Host, should.Equal, "api.github.com")
-	this.So(this.inner.request.URL.Path, should.Equal, "graphql")
+	this.So(this.inner.request.URL.Path, should.Equal, "/graphql")
 }
 
 func (this *AuthenticationClientFixture) TestMissingToken() {
