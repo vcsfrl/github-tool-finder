@@ -19,12 +19,12 @@ type AuthenticationClientFixture struct {
 	*gunit.Fixture
 
 	inner  *FakeHTTPClient
-	client *AuthenticationClient
+	client *AuthenticationClientV4
 }
 
 func (this *AuthenticationClientFixture) Setup() {
 	this.inner = &FakeHTTPClient{}
-	this.client = NewAuthenticationClient(this.inner, "https", "HOSTNAME", "authtoken")
+	this.client = NewAuthenticationClientV4(this.inner, "authtoken")
 }
 
 func (this *AuthenticationClientFixture) TestResponseFromInnerClientReturned() {
@@ -47,14 +47,16 @@ func (this *AuthenticationClientFixture) TestProvidedInformationAddedBeforeReque
 
 func (this *AuthenticationClientFixture) assertRequestConnectionInformation() {
 	this.So(this.inner.request.URL.Scheme, should.Equal, "https")
-	this.So(this.inner.request.URL.Host, should.Equal, "HOSTNAME")
-	this.So(this.inner.request.Host, should.Equal, "HOSTNAME")
+	this.So(this.inner.request.URL.Host, should.Equal, "api.github.com")
+	this.So(this.inner.request.Host, should.Equal, "api.github.com")
+	this.So(this.inner.request.URL.Path, should.Equal, "graphql")
 }
 
 func (this *AuthenticationClientFixture) TestMissingToken() {
 	request := httptest.NewRequest("GET", "/path?existingKey=existingValue", nil)
 	this.client.authToken = ""
 	this.client.Do(request)
+	this.assertRequestConnectionInformation()
 	this.So(this.inner.request.Header.Get("Authorization"), should.Equal, "")
 
 }

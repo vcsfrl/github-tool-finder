@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -39,6 +40,8 @@ func (this *SearchReader) sendResult(result *SearchResponse) error {
 	}
 
 	for _, edge := range result.Data.Search.Edges {
+
+		log.Println(edge.Node)
 		this.output <- &edge.Node
 	}
 

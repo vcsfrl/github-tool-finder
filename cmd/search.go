@@ -16,9 +16,10 @@ func main() {
 		printUsage()
 	}
 
-	client := github_tool_finder.NewAuthenticationClient(http.DefaultClient, "https", "api.github.com/graphql", "08ca17a189702d1a515f3218788944460ad0690c")
+	client := github_tool_finder.NewAuthenticationClientV4(http.DefaultClient, "08ca17a189702d1a515f3218788944460ad0690c")
 	output := make(chan *github_tool_finder.Repository, 1024*1024)
 	nr, _ := strconv.Atoi(os.Args[2])
+
 	reader := github_tool_finder.NewSearchReader(os.Args[1], nr, output, client)
 	go func() {
 		err := reader.Handle()

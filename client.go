@@ -5,28 +5,26 @@ import (
 	"net/http"
 )
 
-func NewAuthenticationClient(inner HTTPClient, scheme string, hostname string, authToken string) *AuthenticationClient {
-	return &AuthenticationClient{
+func NewAuthenticationClientV4(inner HTTPClient, authToken string) *AuthenticationClientV4 {
+	return &AuthenticationClientV4{
 		inner:     inner,
-		scheme:    scheme,
-		hostname:  hostname,
 		authToken: authToken,
 	}
 }
 
-type AuthenticationClient struct {
-	scheme    string
-	hostname  string
+type AuthenticationClientV4 struct {
 	inner     HTTPClient
 	authToken string
 }
 
-func (this AuthenticationClient) Do(request *http.Request) (*http.Response, error) {
-	request.URL.Scheme = this.scheme
-	request.URL.Host = this.hostname
+func (this AuthenticationClientV4) Do(request *http.Request) (*http.Response, error) {
+	request.URL.Scheme = "https"
+	request.URL.Host = "api.github.com"
+	request.Host = "api.github.com"
+	request.URL.Path = "graphql"
 	if "" != this.authToken {
 		request.Header.Set("Authorization", fmt.Sprintf("bearer %s", this.authToken))
 	}
-	request.Host = this.hostname
+
 	return this.inner.Do(request)
 }
