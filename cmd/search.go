@@ -36,19 +36,19 @@ func main() {
 func getArguments() (string, int, string) {
 	argLength := len(os.Args[1:])
 	if argLength != 2 {
-		fmt.Println(usage())
+		fmt.Fprintln(os.Stderr, usage())
 		os.Exit(1)
 	}
 
 	token, ok := os.LookupEnv("GH_TOKEN")
 	if !ok {
-		fmt.Println("Please specify a github token (environment variable: GH_TOKEN)")
+		fmt.Fprintln(os.Stderr, "Please specify a github token (environment variable: GH_TOKEN)")
 		os.Exit(1)
 	}
 
 	total, err := strconv.Atoi(os.Args[2])
 	if nil != err {
-		fmt.Println(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 
