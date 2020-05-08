@@ -6,40 +6,54 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 
 	github_tool_finder "github.com/vcsfrl/github-tool-finder"
 )
 
 func main() {
-	argLength := len(os.Args[1:])
-	if argLength != 2 {
-		printUsage()
-		return
-	}
+	query, total, token := getArguments()
 
-	token, ok := os.LookupEnv("GH_TOKEN")
-	if !ok {
-		fmt.Println("Please specify a github token (env variable: GH_TOKEN)")
-		return
-	}
-
+	transport := make(chan *github_tool_finder.Repository, 1024*1024)
 	client := github_tool_finder.NewAuthenticationClientV4(http.DefaultClient, token)
-	output := make(chan *github_tool_finder.Repository, 1024*1024)
-	nr, _ := strconv.Atoi(os.Args[2])
+	reader := github_tool_finder.NewSearchReader(query, total, transport, client)
+	writer := github_tool_finder.NewWriterHandler(transport, os.Stdout)
 
-	reader := github_tool_finder.NewSearchReader(os.Args[1], nr, output, client)
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
 		err := reader.Handle()
 		if nil != err {
 			log.Fatal(err)
 		}
+		wg.Done()
 	}()
-	writer := github_tool_finder.NewWriterHandler(output, os.Stdout)
+
 	writer.Handle()
+	wg.Wait()
 }
 
-func printUsage() {
-	fmt.Print(`Usage:
- search [query] [nr]
+func getArguments() (string, int, string) {
+	argLength := len(os.Args[1:])
+	if argLength != 2 {
+		log.Fatal(usage())
+	}
+
+	token, ok := os.LookupEnv("GH_TOKEN")
+	if !ok {
+		log.Fatal("Please specify a github token (environment variable: GH_TOKEN)")
+	}
+
+	total, err := strconv.Atoi(os.Args[2])
+	if nil != err {
+		log.Fatal(err.Error())
+	}
+
+	return os.Args[1], total, token
+}
+
+func usage() string {
+	return fmt.Sprintf(`Usage:
+ search [query] [total]
 `)
 }
