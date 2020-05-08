@@ -1,0 +1,43 @@
+query SearchRepositories {
+  search(query: "language:go", type: REPOSITORY, first:2, after: "Y3Vyc29yOjI="){
+    repositoryCount
+    edges {
+      cursor 
+      node {
+				... on Repository {
+          description
+          name
+          nameWithOwner
+          url
+          owner {
+            login
+          }
+          forkCount
+          stargazers {
+            totalCount
+          }
+          watchers {
+            totalCount
+          }
+          homepageUrl
+          licenseInfo {
+            name
+          }
+          mentionableUsers {
+            totalCount
+          }
+          mirrorUrl
+          isMirror
+          primaryLanguage {
+            name
+          }
+          parent {
+            name
+          }
+          createdAt
+          updatedAt
+        }
+      }
+    }
+  }
+}

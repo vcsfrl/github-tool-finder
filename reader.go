@@ -14,10 +14,11 @@ type HTTPClient interface {
 }
 
 type SearchReader struct {
-	client HTTPClient
-	query  string
-	number int
-	output chan *Repository
+	client   HTTPClient
+	query    string
+	nrRepos  int
+	pageSize int
+	output   chan *Repository
 }
 
 func (this *SearchReader) Close() error {
@@ -84,11 +85,11 @@ func (this *SearchReader) repositoryReader() (io.ReadCloser, error) {
 }
 
 func (this *SearchReader) buildQl() string {
-	return fmt.Sprintf(repoSearchQuery, this.query, this.number)
+	return fmt.Sprintf(repoSearchQuery, this.query, this.nrRepos)
 }
 
 func NewSearchReader(query string, number int, output chan *Repository, client HTTPClient) *SearchReader {
-	return &SearchReader{query: query, number: number, output: output, client: client}
+	return &SearchReader{query: query, nrRepos: number, output: output, client: client, pageSize: 100}
 }
 
-const repoSearchQuery = "{\"query\":\"{\\n  search(query: \\\"%s\\\", type: REPOSITORY, first: %d) {\\n    repositoryCount\\n    edges {\\n      node {\\n        ... on Repository {\\n          description\\n          name\\n          nameWithOwner\\n          url\\n          owner {\\n            login\\n          }\\n          forkCount\\n          stargazers {\\n            totalCount\\n          }\\n          watchers {\\n            totalCount\\n          }\\n          homepageUrl\\n          licenseInfo {\\n            name\\n          }\\n          mentionableUsers {\\n            totalCount\\n          }\\n          mirrorUrl\\n          isMirror\\n          primaryLanguage {\\n            name\\n          }\\n          parent {\\n            name\\n          }\\n          createdAt\\n          updatedAt\\n        }\\n      }\\n    }\\n  }\\n}\",\"variables\":{}}"
+const repoSearchQuery = "{\"query\":\"query SearchRepositories {\\n  search(query: \\\"%s\\\", type: REPOSITORY, first:%d){\\n    repositoryCount\\n    edges {\\n      cursor \\n      node {\\n\\t\\t\\t\\t... on Repository {\\n          description\\n          name\\n          nameWithOwner\\n          url\\n          owner {\\n            login\\n          }\\n          forkCount\\n          stargazers {\\n            totalCount\\n          }\\n          watchers {\\n            totalCount\\n          }\\n          homepageUrl\\n          licenseInfo {\\n            name\\n          }\\n          mentionableUsers {\\n            totalCount\\n          }\\n          mirrorUrl\\n          isMirror\\n          primaryLanguage {\\n            name\\n          }\\n          parent {\\n            name\\n          }\\n          createdAt\\n          updatedAt\\n        }\\n      }\\n    }\\n  }\\n}\\n\",\"variables\":{}}"
