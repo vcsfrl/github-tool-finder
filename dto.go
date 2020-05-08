@@ -7,7 +7,8 @@ type SearchResponse struct {
 		Search struct {
 			RepositoryCount int `json:"repositoryCount"`
 			Edges           []struct {
-				Node Repository `json:"node"`
+				Cursor string     `json:"cursor"`
+				Node   Repository `json:"node"`
 			} `json:"edges"`
 		} `json:"search"`
 	} `json:"data,omitempty"`

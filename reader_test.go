@@ -45,17 +45,18 @@ func (this *SearchReaderFixture) TestReadResponse() {
 	this.So(this.fakeClient.callNr, should.Equal, 1)
 }
 
-func (this *SearchReaderFixture) SkipTestPaginatedRead() {
-	this.searchReader.nrRepos = 2
+func (this *SearchReaderFixture) TestPaginatedRead() {
+	this.searchReader.total = 2
 
 	this.fakeClient.Configure(responseBody, 200, nil)
 	this.searchReader.Handle()
 
+	this.So(this.fakeClient.callNr, should.Equal, 2)
 	body, _ := ioutil.ReadAll(this.fakeClient.request.Body)
 	this.So(string(body), should.Equal, grapqlQuery2Result)
+	this.So(<-this.output, should.Resemble, getResponseRepository(1))
 	this.So(<-this.output, should.Resemble, getResponseRepository(2))
 	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
-	this.So(this.fakeClient.callNr, should.Equal, 2)
 }
 
 func (this *SearchReaderFixture) TestReadReadError() {
