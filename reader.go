@@ -69,15 +69,36 @@ func (this *SearchReader) calculateLimit(readIndex int) int {
 }
 
 func (this *SearchReader) sendResult(result *SearchResponse) error {
-	if "" != result.ErrorMessage {
-		return errors.New(result.ErrorMessage)
+	if err, done := this.getErrors(result); done {
+		return err
 	}
+
 	for _, edge := range result.Data.Search.Edges {
 		node := edge.Node
 		this.output <- &node
 	}
 
 	return nil
+}
+
+func (this *SearchReader) getErrors(result *SearchResponse) (error, bool) {
+	if "" != result.Message {
+		return errors.New(result.Message), true
+	}
+
+	if 0 < len(result.Errors) {
+		err := this.wrapErrors(result)
+		return err, true
+	}
+	return nil, false
+}
+
+func (this *SearchReader) wrapErrors(result *SearchResponse) error {
+	err := errors.New("api error")
+	for _, resultErr := range result.Errors {
+		err = fmt.Errorf("%v, %w", err, errors.New(fmt.Sprintf("%s: %s", resultErr.Type, resultErr.Message)))
+	}
+	return err
 }
 
 func (this *SearchReader) readRepositories(limit int, cursor string) *SearchResponse {
@@ -93,13 +114,13 @@ func (this *SearchReader) readRepositories(limit int, cursor string) *SearchResp
 
 func (this *SearchReader) decodeRepositories(reader io.ReadCloser, result *SearchResponse, err error) {
 	if nil != err {
-		result.ErrorMessage = err.Error()
+		result.Message = err.Error()
 		return
 	}
 	decoder := json.NewDecoder(reader)
 	err = decoder.Decode(result)
 	if nil != err {
-		result.ErrorMessage = err.Error()
+		result.Message = err.Error()
 	}
 }
 

@@ -59,16 +59,24 @@ func (this *SearchReaderFixture) TestPaginatedRead() {
 	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
 }
 
-func (this *SearchReaderFixture) TestReadReadError() {
-	this.fakeClient.Configure(responseError, 401, nil)
+func (this *SearchReaderFixture) TestReadError() {
+	this.fakeClient.Configure(responseWithMessage, 401, nil)
 	err := this.searchReader.Handle()
 	this.So(err, should.BeError)
 	this.So(err.Error(), should.Equal, "Bad credentials")
 	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
 }
 
-func (this *SearchReaderFixture) TestReadError() {
-	this.fakeClient.Configure(responseError, 401, errors.New("test error"))
+func (this *SearchReaderFixture) TestApiError() {
+	this.fakeClient.Configure(responseWithError, 401, nil)
+	err := this.searchReader.Handle()
+	this.So(err, should.BeError)
+	this.So(err.Error(), should.Equal, "api error, EXCESSIVE_PAGINATION: Error 1., EXCESSIVE_PAGINATION: Error 2.")
+	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
+}
+
+func (this *SearchReaderFixture) TestReadAppError() {
+	this.fakeClient.Configure(responseWithMessage, 401, errors.New("test error"))
 	err := this.searchReader.Handle()
 	this.So(err, should.BeError)
 	this.So(err.Error(), should.Equal, "test error")
@@ -270,8 +278,40 @@ var responseBody = []string{
 }`,
 }
 
-var responseError = []string{`{
+var responseWithMessage = []string{`{
     "message": "Bad credentials",
     "documentation_url": "https://developer.github.com/v4"
+}`,
+}
+
+var responseWithError = []string{`{
+    "errors": [
+        {
+            "type": "EXCESSIVE_PAGINATION",
+            "path": [
+                "search"
+            ],
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 3
+                }
+            ],
+            "message": "Error 1."
+        },
+        {
+            "type": "EXCESSIVE_PAGINATION",
+            "path": [
+                "search"
+            ],
+            "locations": [
+                {
+                    "line": 2,
+                    "column": 3
+                }
+            ],
+            "message": "Error 2."
+        }
+    ]
 }`,
 }

@@ -12,7 +12,11 @@ type SearchResponse struct {
 			} `json:"edges"`
 		} `json:"search"`
 	} `json:"data,omitempty"`
-	ErrorMessage string `json:"message,omitempty"`
+	Message string `json:"message,omitempty"`
+	Errors  []struct {
+		Type    string `json:"type"`
+		Message string `json:"message"`
+	} `json:"errors,omitempty"`
 }
 
 type Repository struct {
