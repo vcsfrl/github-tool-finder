@@ -56,7 +56,8 @@ func getArguments() (string, int, string) {
 }
 
 func usage() string {
-	return fmt.Sprintf(`Usage:
+	return fmt.Sprintf(`
+Usage:
  search [query] [total]
 
 `)
