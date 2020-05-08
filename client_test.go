@@ -18,12 +18,12 @@ func TestAuthenticationClient(t *testing.T) {
 type AuthenticationClientFixture struct {
 	*gunit.Fixture
 
-	inner  *FakeHTTPClient
+	inner  *FakeSipleHTTPClient
 	client *AuthenticationClientV4
 }
 
 func (this *AuthenticationClientFixture) Setup() {
-	this.inner = &FakeHTTPClient{}
+	this.inner = &FakeSipleHTTPClient{}
 	this.client = NewAuthenticationClientV4(this.inner, "authtoken")
 }
 
@@ -68,4 +68,29 @@ func (this *AuthenticationClientFixture) assertQueryStringIncludesAuthentication
 
 func (this *AuthenticationClientFixture) assertQueryStringValue(key string, expectedValue string) {
 	this.So(this.inner.request.URL.Query().Get(key), should.Equal, expectedValue)
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+type FakeSipleHTTPClient struct {
+	request      *http.Request
+	response     *http.Response
+	responseBody *SearchReaderBuffer
+	err          error
+}
+
+func (this *FakeSipleHTTPClient) Configure(responseText string, statusCode int, err error) {
+	if err == nil {
+		this.responseBody = NewSearchReadBuffer(responseText)
+		this.response = &http.Response{
+			Body:       this.responseBody,
+			StatusCode: statusCode,
+		}
+	}
+	this.err = err
+}
+
+func (this *FakeSipleHTTPClient) Do(request *http.Request) (*http.Response, error) {
+	this.request = request
+
+	return this.response, this.err
 }

@@ -107,7 +107,7 @@ func (this *FakeHTTPClient) Do(request *http.Request) (*http.Response, error) {
 	this.request = request
 
 	if nil != this.err {
-		return nil, this.err
+		return this.response, this.err
 	}
 
 	this.responseBody = NewSearchReadBuffer(this.responseContent[this.callNr])

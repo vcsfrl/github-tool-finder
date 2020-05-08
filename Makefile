@@ -7,3 +7,6 @@ help: ## Usage: make <option>
 
 build: ## APP Build.
 	go build -o bin/search  cmd/search.go;
+
+test: ## APP Test.
+	go test -v -race ./;
