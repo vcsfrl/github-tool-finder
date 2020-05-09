@@ -1,6 +1,8 @@
 # github-tool-finder
 Find tools on Github.
 
+Results are sent to STDOUT in csv format.
+
 ### Install
 
 `cd /project/path`
