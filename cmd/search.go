@@ -17,7 +17,7 @@ func main() {
 	transport := make(chan *github_tool_finder.Repository, 1024*1024)
 	client := github_tool_finder.NewAuthenticationClientV4(http.DefaultClient, token)
 	reader := github_tool_finder.NewSearchReader(query, total, transport, client)
-	writer := github_tool_finder.NewWriterHandler(transport, os.Stdout)
+	writer := github_tool_finder.NewCsvWriter(transport, os.Stdout)
 
 	var wg sync.WaitGroup
 	wg.Add(1)

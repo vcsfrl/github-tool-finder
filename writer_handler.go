@@ -7,13 +7,17 @@ import (
 	"strconv"
 )
 
-type WriterHandler struct {
+type WriterHandler interface {
+	Handle()
+}
+
+type CsvWriter struct {
 	input  chan *Repository
 	closer io.Closer
 	writer *csv.Writer
 }
 
-func (this WriterHandler) Handle() {
+func (this *CsvWriter) Handle() {
 
 	for repository := range this.input {
 		this.writeRepository(repository)
@@ -23,7 +27,7 @@ func (this WriterHandler) Handle() {
 	this.closer.Close()
 }
 
-func (this WriterHandler) writeRepository(repository *Repository) {
+func (this *CsvWriter) writeRepository(repository *Repository) {
 	this.writeValues(
 		repository.Name,
 		repository.NameWithOwner,
@@ -45,13 +49,13 @@ func (this WriterHandler) writeRepository(repository *Repository) {
 	)
 }
 
-func (this *WriterHandler) writeValues(values ...string) {
+func (this *CsvWriter) writeValues(values ...string) {
 	this.writer.Write(values)
 }
 
-func NewWriterHandler(input chan *Repository, output io.WriteCloser) *WriterHandler {
+func NewCsvWriter(input chan *Repository, output io.WriteCloser) *CsvWriter {
 
-	this := &WriterHandler{
+	this := &CsvWriter{
 		input:  input,
 		closer: output,
 		writer: csv.NewWriter(output),

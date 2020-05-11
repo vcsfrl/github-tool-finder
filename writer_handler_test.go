@@ -21,7 +21,7 @@ func TestWriterHandlerFixture(t *testing.T) {
 type WriterHandlerFixture struct {
 	*gunit.Fixture
 
-	handler *WriterHandler
+	handler *CsvWriter
 	input   chan *Repository
 	buffer  *ReadWriteSpyBuffer
 	writer  *csv.Writer
@@ -30,7 +30,7 @@ type WriterHandlerFixture struct {
 func (this *WriterHandlerFixture) Setup() {
 	this.buffer = NewReadWriteSpyBuffer("")
 	this.input = make(chan *Repository, 10)
-	this.handler = NewWriterHandler(this.input, this.buffer)
+	this.handler = NewCsvWriter(this.input, this.buffer)
 }
 
 func (this *WriterHandlerFixture) TestOutputClosed() {
