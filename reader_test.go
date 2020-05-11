@@ -37,8 +37,8 @@ func (this *SearchReaderFixture) Setup() {
 func (this *SearchReaderFixture) TestReadResponse() {
 	this.fakeClient.Configure(responseBody, 200, nil)
 	this.searchReader.Handle()
-
 	body, _ := ioutil.ReadAll(this.fakeClient.request.Body)
+
 	this.So(string(body), should.Equal, grapqlQuery1Result)
 	this.So(<-this.output, should.Resemble, getResponseRepository(1))
 	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
@@ -47,7 +47,6 @@ func (this *SearchReaderFixture) TestReadResponse() {
 
 func (this *SearchReaderFixture) TestPaginatedRead() {
 	this.searchReader.total = 2
-
 	this.fakeClient.Configure(responseBody, 200, nil)
 	this.searchReader.Handle()
 
@@ -59,9 +58,18 @@ func (this *SearchReaderFixture) TestPaginatedRead() {
 	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
 }
 
+func (this *SearchReaderFixture) TestPaginatedReadPageSizeLargerThanTotal() {
+	this.searchReader.pageSize = 3
+	this.fakeClient.Configure(responseBody, 200, nil)
+	this.searchReader.Handle()
+
+	this.So(this.searchReader.pageSize, should.Equal, 1)
+}
+
 func (this *SearchReaderFixture) TestReadError() {
 	this.fakeClient.Configure(responseWithMessage, 401, nil)
 	err := this.searchReader.Handle()
+
 	this.So(err, should.BeError)
 	this.So(err.Error(), should.Equal, "Bad credentials")
 	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
@@ -70,6 +78,7 @@ func (this *SearchReaderFixture) TestReadError() {
 func (this *SearchReaderFixture) TestApiError() {
 	this.fakeClient.Configure(responseWithError, 401, nil)
 	err := this.searchReader.Handle()
+
 	this.So(err, should.BeError)
 	this.So(err.Error(), should.Equal, "api error, EXCESSIVE_PAGINATION: Error 1., EXCESSIVE_PAGINATION: Error 2.")
 	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
@@ -78,8 +87,17 @@ func (this *SearchReaderFixture) TestApiError() {
 func (this *SearchReaderFixture) TestReadAppError() {
 	this.fakeClient.Configure(responseWithMessage, 401, errors.New("test error"))
 	err := this.searchReader.Handle()
+
 	this.So(err, should.BeError)
 	this.So(err.Error(), should.Equal, "test error")
+}
+
+func (this *SearchReaderFixture) TestReadInvalidJsonError() {
+	this.fakeClient.Configure(responseInvalidJson, 200, nil)
+	err := this.searchReader.Handle()
+
+	this.So(err, should.BeError)
+	this.So(err.Error(), should.Equal, "invalid character 'e' in literal true (expecting 'r')")
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -314,4 +332,9 @@ var responseWithError = []string{`{
         }
     ]
 }`,
+}
+
+var responseInvalidJson = []string{
+	"test123",
+	"test456",
 }
