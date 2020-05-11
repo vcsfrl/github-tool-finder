@@ -7,10 +7,6 @@ import (
 	"strconv"
 )
 
-type WriterHandler interface {
-	Handle()
-}
-
 type CsvWriter struct {
 	input  chan *Repository
 	closer io.Closer

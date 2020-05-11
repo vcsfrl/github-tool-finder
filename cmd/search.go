@@ -42,7 +42,7 @@ func getArguments() (string, int, string) {
 
 	token, ok := os.LookupEnv("GH_TOKEN")
 	if !ok {
-		fmt.Fprintln(os.Stderr, "Please specify a github token (environment variable: GH_TOKEN)")
+		fmt.Fprintln(os.Stderr, "Please specify a github token (environment variable: GH_TOKEN).")
 		os.Exit(1)
 	}
 
