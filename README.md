@@ -4,6 +4,7 @@ Find tools on Github.
 Search the Github api based on a query. Results are sent to STDOUT in CSV format.
 
 ### Install
+ - Install GO 1.14 or higher.
  - git clone git@github.com:vcsfrl/github-tool-finder.git
  - `cd github-tool-finder/`
  - `make build`
