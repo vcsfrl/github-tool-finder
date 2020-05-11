@@ -66,6 +66,16 @@ func (this *SearchReaderFixture) TestPaginatedReadPageSizeLargerThanTotal() {
 	this.So(this.searchReader.pageSize, should.Equal, 1)
 }
 
+func (this *SearchReaderFixture) TestPaginatedReadIncompleteLastPage() {
+	this.searchReader.pageSize = 2
+	this.searchReader.total = 3
+	this.fakeClient.Configure(responseBody, 200, nil)
+	this.searchReader.Handle()
+
+	body, _ := ioutil.ReadAll(this.fakeClient.request.Body)
+	this.So(string(body), should.Equal, grapqlQuery2Result)
+}
+
 func (this *SearchReaderFixture) TestReadError() {
 	this.fakeClient.Configure(responseWithMessage, 401, nil)
 	err := this.searchReader.Handle()
@@ -294,6 +304,7 @@ var responseBody = []string{
         }
     }
 }`,
+	`{}`,
 }
 
 var responseWithMessage = []string{`{

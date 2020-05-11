@@ -125,12 +125,8 @@ func (this *SearchReader) decodeRepositories(reader io.ReadCloser, result *Searc
 }
 
 func (this *SearchReader) repositoryReader(limit int, cursor string) (io.ReadCloser, error) {
-	request, err := http.NewRequest("POST", "", strings.NewReader(this.buildQl(limit, cursor)))
-	if nil != err {
-		return nil, err
-	}
+	request, _ := http.NewRequest("POST", "", strings.NewReader(this.buildQl(limit, cursor)))
 	response, err := this.client.Do(request)
-
 	if nil != err {
 		return nil, err
 	}
