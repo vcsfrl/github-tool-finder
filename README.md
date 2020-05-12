@@ -1,7 +1,7 @@
 # github-tool-finder
-Find tools on Github.
+Find repositories on Github.
 
-Search the Github api based on a query. Results are sent to STDOUT in CSV format.
+Search repositories on the Github api based on a query. Results are sent to STDOUT in CSV format.
 
 ### Install
  - install GO 1.14 or higher
