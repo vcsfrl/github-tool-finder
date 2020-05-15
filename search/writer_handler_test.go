@@ -1,8 +1,7 @@
-package github_tool_finder
+package search
 
 import (
 	"bytes"
-	"encoding/csv"
 	"fmt"
 	"strings"
 	"testing"
@@ -23,7 +22,6 @@ type WriterHandlerFixture struct {
 	handler *CsvWriter
 	input   chan *Repository
 	buffer  *ReadWriteSpyBuffer
-	writer  *csv.Writer
 }
 
 func (whf *WriterHandlerFixture) Setup() {

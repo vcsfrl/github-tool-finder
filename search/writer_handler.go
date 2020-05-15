@@ -1,4 +1,4 @@
-package github_tool_finder
+package search
 
 import (
 	"encoding/csv"

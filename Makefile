@@ -9,7 +9,7 @@ build: ## APP Build.
 	go build -o bin/search  cmd/search.go;
 
 test: ## Test.
-	go test -v -race -cover -coverprofile=var/log/coverage.out ./;
+	go test -v -race -cover -coverprofile=var/log/coverage.out ./search/;
 
 cover: ## Test coverage.
 	go tool cover -func=var/log/coverage.out;

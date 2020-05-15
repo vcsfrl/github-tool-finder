@@ -8,16 +8,16 @@ import (
 	"strconv"
 	"sync"
 
-	github_tool_finder "github.com/vcsfrl/github-tool-finder"
+	"github.com/vcsfrl/github-tool-finder/search"
 )
 
 func main() {
 	query, total, token := getArguments()
 
-	transport := make(chan *github_tool_finder.Repository, 1024*1024)
-	client := github_tool_finder.NewAuthenticationClientV4(http.DefaultClient, token)
-	reader := github_tool_finder.NewSearchReader(query, total, transport, client)
-	writer := github_tool_finder.NewCsvWriter(transport, os.Stdout)
+	transport := make(chan *search.Repository, 1024*1024)
+	client := search.NewAuthenticationClientV4(http.DefaultClient, token)
+	reader := search.NewSearchReader(query, total, transport, client)
+	writer := search.NewCsvWriter(transport, os.Stdout)
 
 	var wg sync.WaitGroup
 	wg.Add(1)

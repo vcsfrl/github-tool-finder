@@ -1,4 +1,4 @@
-package github_tool_finder
+package search
 
 import (
 	"errors"
@@ -77,19 +77,19 @@ type FakeSipleHTTPClient struct {
 	err          error
 }
 
-func (this *FakeSipleHTTPClient) Configure(responseText string, statusCode int, err error) {
+func (fc *FakeSipleHTTPClient) Configure(responseText string, statusCode int, err error) {
 	if err == nil {
-		this.responseBody = NewSearchReadBuffer(responseText)
-		this.response = &http.Response{
-			Body:       this.responseBody,
+		fc.responseBody = NewSearchReadBuffer(responseText)
+		fc.response = &http.Response{
+			Body:       fc.responseBody,
 			StatusCode: statusCode,
 		}
 	}
-	this.err = err
+	fc.err = err
 }
 
-func (this *FakeSipleHTTPClient) Do(request *http.Request) (*http.Response, error) {
-	this.request = request
+func (fc *FakeSipleHTTPClient) Do(request *http.Request) (*http.Response, error) {
+	fc.request = request
 
-	return this.response, this.err
+	return fc.response, fc.err
 }
