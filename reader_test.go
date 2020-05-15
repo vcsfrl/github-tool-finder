@@ -81,7 +81,7 @@ func (this *SearchReaderFixture) TestReadError() {
 	err := this.searchReader.Handle()
 
 	this.So(err, should.BeError)
-	this.So(err.Error(), should.Equal, "Bad credentials")
+	this.So(err.Error(), should.Equal, "Bad credentials: read error")
 	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
 }
 
@@ -90,7 +90,7 @@ func (this *SearchReaderFixture) TestApiError() {
 	err := this.searchReader.Handle()
 
 	this.So(err, should.BeError)
-	this.So(err.Error(), should.Equal, "api error, EXCESSIVE_PAGINATION: Error 1., EXCESSIVE_PAGINATION: Error 2.")
+	this.So(err.Error(), should.Equal, "EXCESSIVE_PAGINATION - Error 2.: EXCESSIVE_PAGINATION - Error 1.: api error: read error")
 	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
 }
 
@@ -99,7 +99,7 @@ func (this *SearchReaderFixture) TestReadAppError() {
 	err := this.searchReader.Handle()
 
 	this.So(err, should.BeError)
-	this.So(err.Error(), should.Equal, "test error")
+	this.So(err.Error(), should.Equal, "test error: read error")
 }
 
 func (this *SearchReaderFixture) TestReadInvalidJsonError() {
@@ -107,7 +107,7 @@ func (this *SearchReaderFixture) TestReadInvalidJsonError() {
 	err := this.searchReader.Handle()
 
 	this.So(err, should.BeError)
-	this.So(err.Error(), should.Equal, "invalid character 'e' in literal true (expecting 'r')")
+	this.So(err.Error(), should.Equal, "invalid character 'e' in literal true (expecting 'r'): read error")
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

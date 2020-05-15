@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+var ErrRead = errors.New("read error")
+
 type HTTPClient interface {
 	Do(r *http.Request) (*http.Response, error)
 }
@@ -23,91 +25,102 @@ type SearchReader struct {
 	output   chan *Repository
 }
 
-func (this *SearchReader) Close() error {
-	close(this.output)
+func (sr *SearchReader) Close() error {
+	close(sr.output)
 
 	return nil
 }
 
-func (this *SearchReader) Handle() error {
-	defer this.Close()
-	this.adjustPageSize()
+func (sr *SearchReader) Handle() error {
+	defer sr.Close()
+	sr.adjustPageSize()
 
-	return this.paginatedRead()
+	return sr.paginatedRead()
 }
 
-func (this *SearchReader) adjustPageSize() {
-	if this.pageSize > this.total {
-		this.pageSize = this.total
+func (sr *SearchReader) adjustPageSize() {
+	if sr.pageSize > sr.total {
+		sr.pageSize = sr.total
 	}
 }
 
-func (this *SearchReader) paginatedRead() error {
-	var result *SearchResponse
-	var cursor string
-	for i := 0; i < this.total; i = i + this.pageSize {
-		result = this.readRepositories(this.calculateLimit(i), this.findCursor(result, cursor))
-		if err := this.sendResult(result); nil != err {
+func (sr *SearchReader) paginatedRead() error {
+	var (
+		result *SearchResponse
+		cursor string
+	)
+
+	for i := 0; i < sr.total; i += sr.pageSize {
+		result = sr.readRepositories(sr.calculateLimit(i), sr.findCursor(result, cursor))
+		if err := sr.sendResult(result); nil != err {
 			return err
 		}
 	}
+
 	return nil
 }
 
-func (this *SearchReader) calculateLimit(readIndex int) int {
-	limit := this.pageSize
-	if readIndex+this.pageSize > this.total {
-		limit = this.total - readIndex
+func (sr *SearchReader) calculateLimit(readIndex int) int {
+	limit := sr.pageSize
+	if readIndex+sr.pageSize > sr.total {
+		limit = sr.total - readIndex
 	}
+
 	return limit
 }
 
-func (this *SearchReader) findCursor(previousResult *SearchResponse, cursor string) string {
+func (sr *SearchReader) findCursor(previousResult *SearchResponse, cursor string) string {
 	if nil != previousResult {
 		cursor = previousResult.Data.Search.Edges[len(previousResult.Data.Search.Edges)-1].Cursor
 	}
+
 	return cursor
 }
 
-func (this *SearchReader) readRepositories(limit int, cursor string) *SearchResponse {
+func (sr *SearchReader) readRepositories(limit int, cursor string) *SearchResponse {
 	result := &SearchResponse{}
-	reader, err := this.repositoryQueryReader(this.buildQl(limit, cursor))
+	reader, err := sr.repositoryQueryReader(sr.buildQl(limit, cursor))
+
 	if nil != reader {
 		defer reader.Close()
 	}
-	this.decodeRepositories(reader, result, err)
+
+	sr.decodeRepositories(reader, result, err)
 
 	return result
 }
 
-func (this *SearchReader) sendResult(result *SearchResponse) error {
-	if err, done := this.getErrors(result); done {
+func (sr *SearchReader) sendResult(result *SearchResponse) error {
+	if done, err := sr.getErrors(result); done {
 		return err
 	}
 
 	for _, edge := range result.Data.Search.Edges {
 		node := edge.Node
-		this.output <- &node
+		sr.output <- &node
 	}
 
 	return nil
 }
 
-func (this *SearchReader) decodeRepositories(reader io.ReadCloser, result *SearchResponse, err error) {
+func (sr *SearchReader) decodeRepositories(reader io.Reader, result *SearchResponse, err error) {
 	if nil != err {
 		result.Message = err.Error()
 		return
 	}
+
 	decoder := json.NewDecoder(reader)
 	err = decoder.Decode(result)
+
 	if nil != err {
 		result.Message = err.Error()
 	}
 }
 
-func (this *SearchReader) repositoryQueryReader(query string) (io.ReadCloser, error) {
+func (sr *SearchReader) repositoryQueryReader(query string) (io.ReadCloser, error) {
 	request, _ := http.NewRequest("POST", "", strings.NewReader(query))
-	response, err := this.client.Do(request)
+	response, err := sr.client.Do(request)
+
 	if nil != err {
 		return nil, err
 	}
@@ -115,30 +128,34 @@ func (this *SearchReader) repositoryQueryReader(query string) (io.ReadCloser, er
 	return response.Body, nil
 }
 
-func (this *SearchReader) buildQl(limit int, cursor string) string {
-	if "" != cursor {
+func (sr *SearchReader) buildQl(limit int, cursor string) string {
+	if cursor != "" {
 		cursor = fmt.Sprintf(", after: \\\"%s\\\"", cursor)
 	}
-	return fmt.Sprintf(repoSearchQuery, this.query, limit, cursor)
+
+	return fmt.Sprintf(repoSearchQuery, sr.query, limit, cursor)
 }
 
-func (this *SearchReader) getErrors(result *SearchResponse) (error, bool) {
-	if "" != result.Message {
-		return errors.New(result.Message), true
+func (sr *SearchReader) getErrors(result *SearchResponse) (bool, error) {
+	if result.Message != "" {
+		return true, fmt.Errorf("%s: %w", result.Message, ErrRead)
 	}
 
 	if 0 < len(result.Errors) {
-		err := this.wrapErrors(result)
-		return err, true
+		err := sr.wrapErrors(result)
+		return true, err
 	}
-	return nil, false
+
+	return false, nil
 }
 
-func (this *SearchReader) wrapErrors(result *SearchResponse) error {
-	err := errors.New("api error")
+func (sr *SearchReader) wrapErrors(result *SearchResponse) error {
+	err := fmt.Errorf("api error: %w", ErrRead)
+
 	for _, resultErr := range result.Errors {
-		err = fmt.Errorf("%v, %w", err, errors.New(fmt.Sprintf("%s: %s", resultErr.Type, resultErr.Message)))
+		err = fmt.Errorf("%s - %s: %w", resultErr.Type, resultErr.Message, err)
 	}
+
 	return err
 }
 
