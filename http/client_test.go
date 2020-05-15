@@ -1,6 +1,7 @@
-package search
+package http
 
 import (
+	"bytes"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -85,6 +86,7 @@ func (fc *FakeSipleHTTPClient) Configure(responseText string, statusCode int, er
 			StatusCode: statusCode,
 		}
 	}
+
 	fc.err = err
 }
 
@@ -92,4 +94,22 @@ func (fc *FakeSipleHTTPClient) Do(request *http.Request) (*http.Response, error)
 	fc.request = request
 
 	return fc.response, fc.err
+}
+
+type SearchReaderBuffer struct {
+	*bytes.Buffer
+	closed int
+}
+
+func NewSearchReadBuffer(value string) *SearchReaderBuffer {
+	return &SearchReaderBuffer{
+		Buffer: bytes.NewBufferString(value),
+	}
+}
+
+func (sr *SearchReaderBuffer) Close() error {
+	sr.closed++
+	sr.Buffer.Reset()
+
+	return nil
 }

@@ -7,19 +7,17 @@ import (
 	"io"
 	"net/http"
 	"strings"
+
+	finderhttp "github.com/vcsfrl/github-tool-finder/http"
 )
 
 var ErrRead = errors.New("read error")
-
-type HTTPClient interface {
-	Do(r *http.Request) (*http.Response, error)
-}
 
 type RepositoryReader struct {
 	query    string
 	total    int
 	pageSize int
-	client   HTTPClient
+	client   finderhttp.Client
 	output   chan *Repository
 }
 
@@ -44,7 +42,7 @@ func (sr *RepositoryReader) adjustPageSize() {
 
 func (sr *RepositoryReader) paginatedRead() error {
 	var (
-		result *SearchResponse
+		result *Response
 		cursor string
 	)
 
@@ -67,7 +65,7 @@ func (sr *RepositoryReader) calculateLimit(readIndex int) int {
 	return limit
 }
 
-func (sr *RepositoryReader) findCursor(previousResult *SearchResponse, cursor string) string {
+func (sr *RepositoryReader) findCursor(previousResult *Response, cursor string) string {
 	if nil != previousResult {
 		cursor = previousResult.Data.Search.Edges[len(previousResult.Data.Search.Edges)-1].Cursor
 	}
@@ -75,8 +73,8 @@ func (sr *RepositoryReader) findCursor(previousResult *SearchResponse, cursor st
 	return cursor
 }
 
-func (sr *RepositoryReader) readRepositories(limit int, cursor string) *SearchResponse {
-	result := &SearchResponse{}
+func (sr *RepositoryReader) readRepositories(limit int, cursor string) *Response {
+	result := &Response{}
 	reader, err := sr.repositoryQueryReader(sr.buildQl(limit, cursor))
 
 	if nil != reader {
@@ -88,7 +86,7 @@ func (sr *RepositoryReader) readRepositories(limit int, cursor string) *SearchRe
 	return result
 }
 
-func (sr *RepositoryReader) sendResult(result *SearchResponse) error {
+func (sr *RepositoryReader) sendResult(result *Response) error {
 	if done, err := sr.getErrors(result); done {
 		return err
 	}
@@ -101,7 +99,7 @@ func (sr *RepositoryReader) sendResult(result *SearchResponse) error {
 	return nil
 }
 
-func (sr *RepositoryReader) decodeRepositories(reader io.Reader, result *SearchResponse, err error) {
+func (sr *RepositoryReader) decodeRepositories(reader io.Reader, result *Response, err error) {
 	if nil != err {
 		result.Message = err.Error()
 		return
@@ -134,7 +132,7 @@ func (sr *RepositoryReader) buildQl(limit int, cursor string) string {
 	return fmt.Sprintf(repoSearchQuery, sr.query, limit, cursor)
 }
 
-func (sr *RepositoryReader) getErrors(result *SearchResponse) (bool, error) {
+func (sr *RepositoryReader) getErrors(result *Response) (bool, error) {
 	if result.Message != "" {
 		return true, fmt.Errorf("%s: %w", result.Message, ErrRead)
 	}
@@ -147,7 +145,7 @@ func (sr *RepositoryReader) getErrors(result *SearchResponse) (bool, error) {
 	return false, nil
 }
 
-func (sr *RepositoryReader) wrapErrors(result *SearchResponse) error {
+func (sr *RepositoryReader) wrapErrors(result *Response) error {
 	err := fmt.Errorf("api error: %w", ErrRead)
 
 	for _, resultErr := range result.Errors {
@@ -157,7 +155,7 @@ func (sr *RepositoryReader) wrapErrors(result *SearchResponse) error {
 	return err
 }
 
-func NewRepositoryReader(query string, total int, output chan *Repository, client HTTPClient) *RepositoryReader {
+func NewRepositoryReader(query string, total int, output chan *Repository, client finderhttp.Client) *RepositoryReader {
 	return &RepositoryReader{query: query, total: total, output: output, client: client, pageSize: 100}
 }
 

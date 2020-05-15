@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"sync"
 
+	http2 "github.com/vcsfrl/github-tool-finder/http"
+
 	"github.com/vcsfrl/github-tool-finder/search"
 )
 
@@ -15,7 +17,7 @@ func main() {
 	query, total, token := getArguments()
 
 	transport := make(chan *search.Repository, 1024*1024)
-	client := search.NewAuthenticationClientV4(http.DefaultClient, token)
+	client := http2.NewAuthenticationClientV4(http.DefaultClient, token)
 	reader := search.NewRepositoryReader(query, total, transport, client)
 	writer := search.NewCsvWriter(transport, os.Stdout)
 

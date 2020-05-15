@@ -1,11 +1,15 @@
-package search
+package http
 
 import (
 	"fmt"
 	"net/http"
 )
 
-func NewAuthenticationClientV4(inner HTTPClient, authToken string) *AuthenticationClientV4 {
+type Client interface {
+	Do(r *http.Request) (*http.Response, error)
+}
+
+func NewAuthenticationClientV4(inner Client, authToken string) *AuthenticationClientV4 {
 	return &AuthenticationClientV4{
 		inner:     inner,
 		authToken: authToken,
@@ -13,7 +17,7 @@ func NewAuthenticationClientV4(inner HTTPClient, authToken string) *Authenticati
 }
 
 type AuthenticationClientV4 struct {
-	inner     HTTPClient
+	inner     Client
 	authToken string
 }
 
@@ -25,7 +29,7 @@ func (ac *AuthenticationClientV4) Do(request *http.Request) (*http.Response, err
 	request.Header.Add("Accept", "application/json")
 	request.Header.Add("Content-Type", "application/json")
 
-	if "" != ac.authToken {
+	if ac.authToken != "" {
 		request.Header.Add("Authorization", fmt.Sprintf("bearer %s", ac.authToken))
 	}
 

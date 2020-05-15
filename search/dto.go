@@ -2,7 +2,7 @@ package search
 
 import "time"
 
-type SearchResponse struct {
+type Response struct {
 	Data struct {
 		Search struct {
 			RepositoryCount int `json:"repositoryCount"`

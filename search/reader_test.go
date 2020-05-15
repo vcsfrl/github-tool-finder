@@ -122,30 +122,30 @@ type FakeHTTPClient struct {
 	callNr             int
 }
 
-func (this *FakeHTTPClient) Configure(responseContent []string, statusCode int, err error) {
+func (fc *FakeHTTPClient) Configure(responseContent []string, statusCode int, err error) {
 	if err == nil {
-		this.responseContent = responseContent
-		this.responseStatusCode = statusCode
+		fc.responseContent = responseContent
+		fc.responseStatusCode = statusCode
 	}
-	this.err = err
+	fc.err = err
 }
 
-func (this *FakeHTTPClient) Do(request *http.Request) (*http.Response, error) {
+func (fc *FakeHTTPClient) Do(request *http.Request) (*http.Response, error) {
 
-	this.request = request
+	fc.request = request
 
-	if nil != this.err {
-		return this.response, this.err
+	if nil != fc.err {
+		return fc.response, fc.err
 	}
 
-	this.responseBody = NewSearchReadBuffer(this.responseContent[this.callNr])
-	this.response = &http.Response{
-		Body:       this.responseBody,
-		StatusCode: this.responseStatusCode,
+	fc.responseBody = NewSearchReadBuffer(fc.responseContent[fc.callNr])
+	fc.response = &http.Response{
+		Body:       fc.responseBody,
+		StatusCode: fc.responseStatusCode,
 	}
-	this.callNr++
+	fc.callNr++
 
-	return this.response, this.err
+	return fc.response, fc.err
 }
 
 type SearchReaderBuffer struct {
@@ -153,23 +153,20 @@ type SearchReaderBuffer struct {
 	closed int
 }
 
-//////////
-
 func NewSearchReadBuffer(value string) *SearchReaderBuffer {
 	return &SearchReaderBuffer{
 		Buffer: bytes.NewBufferString(value),
 	}
 }
 
-func (this *SearchReaderBuffer) Close() error {
-	this.closed++
-	this.Buffer.Reset()
+func (sr *SearchReaderBuffer) Close() error {
+	sr.closed++
+	sr.Buffer.Reset()
 
 	return nil
 }
 
 func getResponseRepository(index int) *Repository {
-
 	created, _ := time.Parse(time.RFC3339, "2015-05-23T21:24:16Z")
 	updated, _ := time.Parse(time.RFC3339, "2020-04-15T20:01:25Z")
 
