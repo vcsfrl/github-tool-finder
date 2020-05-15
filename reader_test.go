@@ -177,7 +177,7 @@ func getResponseRepository(index int) *Repository {
 		Description:   fmt.Sprintf("%d Test description.", index),
 		Name:          fmt.Sprintf("%dtestrepo", index),
 		NameWithOwner: fmt.Sprintf("%dtestrepo/testrepo", index),
-		Url:           "https://github.com/testrepo/testrepo",
+		URL:           "https://github.com/testrepo/testrepo",
 		Owner: struct {
 			Login string `json:"login"`
 		}{Login: "testrepo"},
@@ -188,14 +188,14 @@ func getResponseRepository(index int) *Repository {
 		Watchers: struct {
 			TotalCount int64 `json:"totalCount"`
 		}{TotalCount: 10},
-		HomepageUrl: "testhomepage",
+		HomepageURL: "testhomepage",
 		LicenseInfo: struct {
 			Name string `json:"name"`
 		}{Name: "testlicense"},
 		MentionableUsers: struct {
 			TotalCount int64 `json:"totalCount"`
 		}{TotalCount: 10},
-		MirrorUrl: "testmirror",
+		MirrorURL: "testmirror",
 		IsMirror:  true,
 		PrimaryLanguage: struct {
 			Name string `json:"name"`

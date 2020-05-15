@@ -23,7 +23,7 @@ type Repository struct {
 	Description   string `json:"description"`
 	Name          string `json:"name"`
 	NameWithOwner string `json:"nameWithOwner"`
-	Url           string `json:"url"`
+	URL           string `json:"url"`
 	Owner         struct {
 		Login string `json:"login"`
 	} `json:"owner"`
@@ -34,14 +34,14 @@ type Repository struct {
 	Watchers struct {
 		TotalCount int64 `json:"totalCount"`
 	} `json:"watchers"`
-	HomepageUrl string `json:"homepageUrl"`
+	HomepageURL string `json:"homepageUrl"`
 	LicenseInfo struct {
 		Name string `json:"name"`
 	} `json:"licenseInfo"`
 	MentionableUsers struct {
 		TotalCount int64 `json:"totalCount"`
 	} `json:"mentionableUsers"`
-	MirrorUrl       string `json:"mirrorUrl"`
+	MirrorURL       string `json:"mirrorUrl"`
 	IsMirror        bool   `json:"isMirror"`
 	PrimaryLanguage struct {
 		Name string `json:"name"`

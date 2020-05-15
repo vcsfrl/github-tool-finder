@@ -50,8 +50,8 @@ func (whf *WriterHandlerFixture) assertHeaderMatchesRecord() {
 	header := lines[0]
 	record := lines[1]
 
-	whf.So(header, should.Equal, "Name,NameWithOwner,Owner,Description,Url,ForkCount,Stargazers,Watchers,HomepageUrl,LicenseInfo,MentionableUsers,MirrorUrl,IsMirror,PrimaryLanguage,Parent,CreatedAt,UpdatedAt")
-	whf.So(record, should.Equal, "Name1,NameWithOwner1,Owner1,Description1,Url1,2,3,4,HomepageUrl1,LicenseInfo1,5,MirrorUrl1,false,PrimaryLanguage1,Parent1,2020-04-15 20:01:25 +0000 UTC,2020-05-15 20:01:25 +0000 UTC")
+	whf.So(header, should.Equal, "Name,NameWithOwner,Owner,Description,URL,ForkCount,Stargazers,Watchers,HomepageURL,LicenseInfo,MentionableUsers,MirrorURL,IsMirror,PrimaryLanguage,Parent,CreatedAt,UpdatedAt")
+	whf.So(record, should.Equal, "Name1,NameWithOwner1,Owner1,Description1,URL1,2,3,4,HomepageURL1,LicenseInfo1,5,MirrorURL1,false,PrimaryLanguage1,Parent1,2020-04-15 20:01:25 +0000 UTC,2020-05-15 20:01:25 +0000 UTC")
 
 }
 
@@ -60,8 +60,8 @@ func (whf *WriterHandlerFixture) TestAllRepositoriesWritten() {
 	whf.handler.Handle()
 
 	if lines := whf.outputLines(); whf.So(lines, should.HaveLength, 3) {
-		whf.So(lines[1], should.Equal, "Name1,NameWithOwner1,Owner1,Description1,Url1,2,3,4,HomepageUrl1,LicenseInfo1,5,MirrorUrl1,false,PrimaryLanguage1,Parent1,2020-04-15 20:01:25 +0000 UTC,2020-05-15 20:01:25 +0000 UTC")
-		whf.So(lines[2], should.Equal, "Name2,NameWithOwner2,Owner2,Description2,Url2,3,4,5,HomepageUrl2,LicenseInfo2,6,MirrorUrl2,false,PrimaryLanguage2,Parent2,2020-04-15 20:01:25 +0000 UTC,2020-05-15 20:01:25 +0000 UTC")
+		whf.So(lines[1], should.Equal, "Name1,NameWithOwner1,Owner1,Description1,URL1,2,3,4,HomepageURL1,LicenseInfo1,5,MirrorURL1,false,PrimaryLanguage1,Parent1,2020-04-15 20:01:25 +0000 UTC,2020-05-15 20:01:25 +0000 UTC")
+		whf.So(lines[2], should.Equal, "Name2,NameWithOwner2,Owner2,Description2,URL2,3,4,5,HomepageURL2,LicenseInfo2,6,MirrorURL2,false,PrimaryLanguage2,Parent2,2020-04-15 20:01:25 +0000 UTC,2020-05-15 20:01:25 +0000 UTC")
 	}
 }
 
@@ -80,7 +80,7 @@ func (whf *WriterHandlerFixture) createRepository(index int64) *Repository {
 		Description:   fmt.Sprintf("Description%d", index),
 		Name:          fmt.Sprintf("Name%d", index),
 		NameWithOwner: fmt.Sprintf("NameWithOwner%d", index),
-		Url:           fmt.Sprintf("Url%d", index),
+		URL:           fmt.Sprintf("URL%d", index),
 		Owner: struct {
 			Login string `json:"login"`
 		}{Login: fmt.Sprintf("Owner%d", index)},
@@ -91,14 +91,14 @@ func (whf *WriterHandlerFixture) createRepository(index int64) *Repository {
 		Watchers: struct {
 			TotalCount int64 `json:"totalCount"`
 		}{TotalCount: index + 3},
-		HomepageUrl: fmt.Sprintf("HomepageUrl%d", index),
+		HomepageURL: fmt.Sprintf("HomepageURL%d", index),
 		LicenseInfo: struct {
 			Name string `json:"name"`
 		}{Name: fmt.Sprintf("LicenseInfo%d", index)},
 		MentionableUsers: struct {
 			TotalCount int64 `json:"totalCount"`
 		}{TotalCount: index + 4},
-		MirrorUrl: fmt.Sprintf("MirrorUrl%d", index),
+		MirrorURL: fmt.Sprintf("MirrorURL%d", index),
 		IsMirror:  false,
 		PrimaryLanguage: struct {
 			Name string `json:"name"`

@@ -28,14 +28,14 @@ func (cw *CsvWriter) writeRepository(repository *Repository) {
 		repository.NameWithOwner,
 		repository.Owner.Login,
 		repository.Description,
-		repository.Url,
+		repository.URL,
 		fmt.Sprintf("%d", repository.ForkCount),
 		fmt.Sprintf("%d", repository.Stargazers.TotalCount),
 		fmt.Sprintf("%d", repository.Watchers.TotalCount),
-		repository.HomepageUrl,
+		repository.HomepageURL,
 		repository.LicenseInfo.Name,
 		fmt.Sprintf("%d", repository.MentionableUsers.TotalCount),
-		repository.MirrorUrl,
+		repository.MirrorURL,
 		strconv.FormatBool(repository.IsMirror),
 		repository.PrimaryLanguage.Name,
 		repository.Parent.Name,
@@ -55,7 +55,7 @@ func NewCsvWriter(input chan *Repository, output io.WriteCloser) *CsvWriter {
 		writer: csv.NewWriter(output),
 	}
 
-	this.writeValues("Name", "NameWithOwner", "Owner", "Description", "Url", "ForkCount", "Stargazers", "Watchers", "HomepageUrl", "LicenseInfo", "MentionableUsers", "MirrorUrl", "IsMirror", "PrimaryLanguage", "Parent", "CreatedAt", "UpdatedAt")
+	this.writeValues("Name", "NameWithOwner", "Owner", "Description", "URL", "ForkCount", "Stargazers", "Watchers", "HomepageURL", "LicenseInfo", "MentionableUsers", "MirrorURL", "IsMirror", "PrimaryLanguage", "Parent", "CreatedAt", "UpdatedAt")
 
 	return this
 }
