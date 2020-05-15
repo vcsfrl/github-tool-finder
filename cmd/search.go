@@ -22,12 +22,15 @@ func main() {
 	writer := search.NewCsvWriter(transport, os.Stdout)
 
 	var wg sync.WaitGroup
+
 	wg.Add(1)
+
 	go func() {
 		err := reader.Handle()
 		if nil != err {
 			log.Fatal(err)
 		}
+
 		wg.Done()
 	}()
 
