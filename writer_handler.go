@@ -13,18 +13,17 @@ type CsvWriter struct {
 	writer *csv.Writer
 }
 
-func (this *CsvWriter) Handle() {
-
-	for repository := range this.input {
-		this.writeRepository(repository)
+func (cw *CsvWriter) Handle() {
+	for repository := range cw.input {
+		cw.writeRepository(repository)
 	}
 
-	this.writer.Flush()
-	this.closer.Close()
+	cw.writer.Flush()
+	cw.closer.Close()
 }
 
-func (this *CsvWriter) writeRepository(repository *Repository) {
-	this.writeValues(
+func (cw *CsvWriter) writeRepository(repository *Repository) {
+	cw.writeValues(
 		repository.Name,
 		repository.NameWithOwner,
 		repository.Owner.Login,
@@ -45,12 +44,11 @@ func (this *CsvWriter) writeRepository(repository *Repository) {
 	)
 }
 
-func (this *CsvWriter) writeValues(values ...string) {
-	this.writer.Write(values)
+func (cw *CsvWriter) writeValues(values ...string) {
+	cw.writer.Write(values)
 }
 
 func NewCsvWriter(input chan *Repository, output io.WriteCloser) *CsvWriter {
-
 	this := &CsvWriter{
 		input:  input,
 		closer: output,

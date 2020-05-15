@@ -15,7 +15,6 @@ import (
 
 func TestWriterHandlerFixture(t *testing.T) {
 	gunit.Run(new(WriterHandlerFixture), t)
-
 }
 
 type WriterHandlerFixture struct {
@@ -27,53 +26,53 @@ type WriterHandlerFixture struct {
 	writer  *csv.Writer
 }
 
-func (this *WriterHandlerFixture) Setup() {
-	this.buffer = NewReadWriteSpyBuffer("")
-	this.input = make(chan *Repository, 10)
-	this.handler = NewCsvWriter(this.input, this.buffer)
+func (whf *WriterHandlerFixture) Setup() {
+	whf.buffer = NewReadWriteSpyBuffer("")
+	whf.input = make(chan *Repository, 10)
+	whf.handler = NewCsvWriter(whf.input, whf.buffer)
 }
 
-func (this *WriterHandlerFixture) TestOutputClosed() {
-	close(this.input)
-	this.handler.Handle()
-	this.So(this.buffer.closed, should.Equal, 1)
+func (whf *WriterHandlerFixture) TestOutputClosed() {
+	close(whf.input)
+	whf.handler.Handle()
+	whf.So(whf.buffer.closed, should.Equal, 1)
 }
 
-func (this *WriterHandlerFixture) TestHeaderMatchesRecord() {
-	this.input <- this.createRepository(1)
-	close(this.input)
-	this.handler.Handle()
-	this.assertHeaderMatchesRecord()
+func (whf *WriterHandlerFixture) TestHeaderMatchesRecord() {
+	whf.input <- whf.createRepository(1)
+	close(whf.input)
+	whf.handler.Handle()
+	whf.assertHeaderMatchesRecord()
 }
 
-func (this *WriterHandlerFixture) assertHeaderMatchesRecord() {
-	lines := this.outputLines()
+func (whf *WriterHandlerFixture) assertHeaderMatchesRecord() {
+	lines := whf.outputLines()
 	header := lines[0]
 	record := lines[1]
 
-	this.So(header, should.Equal, "Name,NameWithOwner,Owner,Description,Url,ForkCount,Stargazers,Watchers,HomepageUrl,LicenseInfo,MentionableUsers,MirrorUrl,IsMirror,PrimaryLanguage,Parent,CreatedAt,UpdatedAt")
-	this.So(record, should.Equal, "Name1,NameWithOwner1,Owner1,Description1,Url1,2,3,4,HomepageUrl1,LicenseInfo1,5,MirrorUrl1,false,PrimaryLanguage1,Parent1,2020-04-15 20:01:25 +0000 UTC,2020-05-15 20:01:25 +0000 UTC")
+	whf.So(header, should.Equal, "Name,NameWithOwner,Owner,Description,Url,ForkCount,Stargazers,Watchers,HomepageUrl,LicenseInfo,MentionableUsers,MirrorUrl,IsMirror,PrimaryLanguage,Parent,CreatedAt,UpdatedAt")
+	whf.So(record, should.Equal, "Name1,NameWithOwner1,Owner1,Description1,Url1,2,3,4,HomepageUrl1,LicenseInfo1,5,MirrorUrl1,false,PrimaryLanguage1,Parent1,2020-04-15 20:01:25 +0000 UTC,2020-05-15 20:01:25 +0000 UTC")
 
 }
 
-func (this *WriterHandlerFixture) TestAllRepositoriesWritten() {
-	this.sendEnvelopes(2)
-	this.handler.Handle()
+func (whf *WriterHandlerFixture) TestAllRepositoriesWritten() {
+	whf.sendEnvelopes(2)
+	whf.handler.Handle()
 
-	if lines := this.outputLines(); this.So(lines, should.HaveLength, 3) {
-		this.So(lines[1], should.Equal, "Name1,NameWithOwner1,Owner1,Description1,Url1,2,3,4,HomepageUrl1,LicenseInfo1,5,MirrorUrl1,false,PrimaryLanguage1,Parent1,2020-04-15 20:01:25 +0000 UTC,2020-05-15 20:01:25 +0000 UTC")
-		this.So(lines[2], should.Equal, "Name2,NameWithOwner2,Owner2,Description2,Url2,3,4,5,HomepageUrl2,LicenseInfo2,6,MirrorUrl2,false,PrimaryLanguage2,Parent2,2020-04-15 20:01:25 +0000 UTC,2020-05-15 20:01:25 +0000 UTC")
+	if lines := whf.outputLines(); whf.So(lines, should.HaveLength, 3) {
+		whf.So(lines[1], should.Equal, "Name1,NameWithOwner1,Owner1,Description1,Url1,2,3,4,HomepageUrl1,LicenseInfo1,5,MirrorUrl1,false,PrimaryLanguage1,Parent1,2020-04-15 20:01:25 +0000 UTC,2020-05-15 20:01:25 +0000 UTC")
+		whf.So(lines[2], should.Equal, "Name2,NameWithOwner2,Owner2,Description2,Url2,3,4,5,HomepageUrl2,LicenseInfo2,6,MirrorUrl2,false,PrimaryLanguage2,Parent2,2020-04-15 20:01:25 +0000 UTC,2020-05-15 20:01:25 +0000 UTC")
 	}
 }
 
-func (this *WriterHandlerFixture) sendEnvelopes(count int) {
+func (whf *WriterHandlerFixture) sendEnvelopes(count int) {
 	for i := 1; i < count+1; i++ {
-		this.input <- this.createRepository(int64(i))
+		whf.input <- whf.createRepository(int64(i))
 	}
-	close(this.input)
+	close(whf.input)
 }
 
-func (this *WriterHandlerFixture) createRepository(index int64) *Repository {
+func (whf *WriterHandlerFixture) createRepository(index int64) *Repository {
 
 	created, _ := time.Parse(time.RFC3339, "2020-04-15T20:01:25Z")
 	updated, _ := time.Parse(time.RFC3339, "2020-05-15T20:01:25Z")
@@ -112,8 +111,8 @@ func (this *WriterHandlerFixture) createRepository(index int64) *Repository {
 	}
 }
 
-func (this *WriterHandlerFixture) outputLines() []string {
-	outputFile := strings.TrimSpace(this.buffer.String())
+func (whf *WriterHandlerFixture) outputLines() []string {
+	outputFile := strings.TrimSpace(whf.buffer.String())
 	return strings.Split(outputFile, "\n")
 }
 

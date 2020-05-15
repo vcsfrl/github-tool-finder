@@ -22,55 +22,54 @@ type AuthenticationClientFixture struct {
 	client *AuthenticationClientV4
 }
 
-func (this *AuthenticationClientFixture) Setup() {
-	this.inner = &FakeSipleHTTPClient{}
-	this.client = NewAuthenticationClientV4(this.inner, "authtoken")
+func (acf *AuthenticationClientFixture) Setup() {
+	acf.inner = &FakeSipleHTTPClient{}
+	acf.client = NewAuthenticationClientV4(acf.inner, "authtoken")
 }
 
-func (this *AuthenticationClientFixture) TestResponseFromInnerClientReturned() {
-	this.inner.response = &http.Response{StatusCode: http.StatusTeapot}
-	this.inner.err = errors.New("HTTP Error")
+func (acf *AuthenticationClientFixture) TestResponseFromInnerClientReturned() {
+	acf.inner.response = &http.Response{StatusCode: http.StatusTeapot}
+	acf.inner.err = errors.New("HTTP Error")
 	request := httptest.NewRequest("GET", "/path", nil)
-	response, err := this.client.Do(request)
-	this.So(response.StatusCode, should.Equal, http.StatusTeapot)
-	this.So(err.Error(), should.Equal, "HTTP Error")
+	response, err := acf.client.Do(request)
+	acf.So(response.StatusCode, should.Equal, http.StatusTeapot)
+	acf.So(err.Error(), should.Equal, "HTTP Error")
 }
 
-func (this *AuthenticationClientFixture) TestProvidedInformationAddedBeforeRequestSent() {
+func (acf *AuthenticationClientFixture) TestProvidedInformationAddedBeforeRequestSent() {
 	request := httptest.NewRequest("GET", "/path?existingKey=existingValue", nil)
 
-	this.client.Do(request)
-	this.assertRequestConnectionInformation()
-	this.assertQueryStringIncludesAuthentication()
-	this.assertQueryStringValue("existingKey", "existingValue")
+	acf.client.Do(request)
+	acf.assertRequestConnectionInformation()
+	acf.assertQueryStringIncludesAuthentication()
+	acf.assertQueryStringValue("existingKey", "existingValue")
 }
 
-func (this *AuthenticationClientFixture) assertRequestConnectionInformation() {
-	this.So(this.inner.request.URL.Scheme, should.Equal, "https")
-	this.So(this.inner.request.URL.Host, should.Equal, "api.github.com")
-	this.So(this.inner.request.Host, should.Equal, "api.github.com")
-	this.So(this.inner.request.URL.Path, should.Equal, "/graphql")
+func (acf *AuthenticationClientFixture) assertRequestConnectionInformation() {
+	acf.So(acf.inner.request.URL.Scheme, should.Equal, "https")
+	acf.So(acf.inner.request.URL.Host, should.Equal, "api.github.com")
+	acf.So(acf.inner.request.Host, should.Equal, "api.github.com")
+	acf.So(acf.inner.request.URL.Path, should.Equal, "/graphql")
 }
 
-func (this *AuthenticationClientFixture) TestMissingToken() {
+func (acf *AuthenticationClientFixture) TestMissingToken() {
 	request := httptest.NewRequest("GET", "/path?existingKey=existingValue", nil)
-	this.client.authToken = ""
-	this.client.Do(request)
-	this.assertRequestConnectionInformation()
-	this.So(this.inner.request.Header.Get("Authorization"), should.Equal, "")
-
+	acf.client.authToken = ""
+	acf.client.Do(request)
+	acf.assertRequestConnectionInformation()
+	acf.So(acf.inner.request.Header.Get("Authorization"), should.Equal, "")
 }
 
-func (this *AuthenticationClientFixture) assertQueryStringIncludesAuthentication() {
-	this.So(this.inner.request.Header.Get("Authorization"), should.Equal, "bearer authtoken")
-
+func (acf *AuthenticationClientFixture) assertQueryStringIncludesAuthentication() {
+	acf.So(acf.inner.request.Header.Get("Authorization"), should.Equal, "bearer authtoken")
 }
 
-func (this *AuthenticationClientFixture) assertQueryStringValue(key string, expectedValue string) {
-	this.So(this.inner.request.URL.Query().Get(key), should.Equal, expectedValue)
+func (acf *AuthenticationClientFixture) assertQueryStringValue(key string, expectedValue string) {
+	acf.So(acf.inner.request.URL.Query().Get(key), should.Equal, expectedValue)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 type FakeSipleHTTPClient struct {
 	request      *http.Request
 	response     *http.Response
