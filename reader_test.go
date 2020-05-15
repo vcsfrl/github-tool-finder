@@ -26,88 +26,88 @@ type SearchReaderFixture struct {
 	searchReader *SearchReader
 }
 
-func (this *SearchReaderFixture) Setup() {
-	this.output = make(chan *Repository, 10)
-	this.fakeClient = &FakeHTTPClient{}
+func (srf *SearchReaderFixture) Setup() {
+	srf.output = make(chan *Repository, 10)
+	srf.fakeClient = &FakeHTTPClient{}
 
-	this.searchReader = NewSearchReader("test:test test", 1, this.output, this.fakeClient)
-	this.searchReader.pageSize = 1
+	srf.searchReader = NewSearchReader("test:test test", 1, srf.output, srf.fakeClient)
+	srf.searchReader.pageSize = 1
 }
 
-func (this *SearchReaderFixture) TestReadResponse() {
-	this.fakeClient.Configure(responseBody, 200, nil)
-	this.searchReader.Handle()
-	body, _ := ioutil.ReadAll(this.fakeClient.request.Body)
+func (srf *SearchReaderFixture) TestReadResponse() {
+	srf.fakeClient.Configure(responseBody, 200, nil)
+	srf.searchReader.Handle()
+	body, _ := ioutil.ReadAll(srf.fakeClient.request.Body)
 
-	this.So(string(body), should.Equal, grapqlQuery1Result)
-	this.So(<-this.output, should.Resemble, getResponseRepository(1))
-	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
-	this.So(this.fakeClient.callNr, should.Equal, 1)
+	srf.So(string(body), should.Equal, grapqlQuery1Result)
+	srf.So(<-srf.output, should.Resemble, getResponseRepository(1))
+	srf.So(srf.fakeClient.responseBody.closed, should.Equal, 1)
+	srf.So(srf.fakeClient.callNr, should.Equal, 1)
 }
 
-func (this *SearchReaderFixture) TestPaginatedRead() {
-	this.searchReader.total = 2
-	this.fakeClient.Configure(responseBody, 200, nil)
-	this.searchReader.Handle()
+func (srf *SearchReaderFixture) TestPaginatedRead() {
+	srf.searchReader.total = 2
+	srf.fakeClient.Configure(responseBody, 200, nil)
+	srf.searchReader.Handle()
 
-	this.So(this.fakeClient.callNr, should.Equal, 2)
-	body, _ := ioutil.ReadAll(this.fakeClient.request.Body)
-	this.So(string(body), should.Equal, grapqlQuery2Result)
-	this.So(<-this.output, should.Resemble, getResponseRepository(1))
-	this.So(<-this.output, should.Resemble, getResponseRepository(2))
-	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
+	srf.So(srf.fakeClient.callNr, should.Equal, 2)
+	body, _ := ioutil.ReadAll(srf.fakeClient.request.Body)
+	srf.So(string(body), should.Equal, grapqlQuery2Result)
+	srf.So(<-srf.output, should.Resemble, getResponseRepository(1))
+	srf.So(<-srf.output, should.Resemble, getResponseRepository(2))
+	srf.So(srf.fakeClient.responseBody.closed, should.Equal, 1)
 }
 
-func (this *SearchReaderFixture) TestPaginatedReadPageSizeLargerThanTotal() {
-	this.searchReader.pageSize = 3
-	this.fakeClient.Configure(responseBody, 200, nil)
-	this.searchReader.Handle()
+func (srf *SearchReaderFixture) TestPaginatedReadPageSizeLargerThanTotal() {
+	srf.searchReader.pageSize = 3
+	srf.fakeClient.Configure(responseBody, 200, nil)
+	srf.searchReader.Handle()
 
-	this.So(this.searchReader.pageSize, should.Equal, 1)
+	srf.So(srf.searchReader.pageSize, should.Equal, 1)
 }
 
-func (this *SearchReaderFixture) TestPaginatedReadIncompleteLastPage() {
-	this.searchReader.pageSize = 2
-	this.searchReader.total = 3
-	this.fakeClient.Configure(responseBody, 200, nil)
-	this.searchReader.Handle()
+func (srf *SearchReaderFixture) TestPaginatedReadIncompleteLastPage() {
+	srf.searchReader.pageSize = 2
+	srf.searchReader.total = 3
+	srf.fakeClient.Configure(responseBody, 200, nil)
+	srf.searchReader.Handle()
 
-	body, _ := ioutil.ReadAll(this.fakeClient.request.Body)
-	this.So(string(body), should.Equal, grapqlQuery2Result)
+	body, _ := ioutil.ReadAll(srf.fakeClient.request.Body)
+	srf.So(string(body), should.Equal, grapqlQuery2Result)
 }
 
-func (this *SearchReaderFixture) TestReadError() {
-	this.fakeClient.Configure(responseWithMessage, 401, nil)
-	err := this.searchReader.Handle()
+func (srf *SearchReaderFixture) TestReadError() {
+	srf.fakeClient.Configure(responseWithMessage, 401, nil)
+	err := srf.searchReader.Handle()
 
-	this.So(err, should.BeError)
-	this.So(err.Error(), should.Equal, "Bad credentials: read error")
-	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
+	srf.So(err, should.BeError)
+	srf.So(err.Error(), should.Equal, "Bad credentials: read error")
+	srf.So(srf.fakeClient.responseBody.closed, should.Equal, 1)
 }
 
-func (this *SearchReaderFixture) TestApiError() {
-	this.fakeClient.Configure(responseWithError, 401, nil)
-	err := this.searchReader.Handle()
+func (srf *SearchReaderFixture) TestApiError() {
+	srf.fakeClient.Configure(responseWithError, 401, nil)
+	err := srf.searchReader.Handle()
 
-	this.So(err, should.BeError)
-	this.So(err.Error(), should.Equal, "EXCESSIVE_PAGINATION - Error 2.: EXCESSIVE_PAGINATION - Error 1.: api error: read error")
-	this.So(this.fakeClient.responseBody.closed, should.Equal, 1)
+	srf.So(err, should.BeError)
+	srf.So(err.Error(), should.Equal, "EXCESSIVE_PAGINATION - Error 2.: EXCESSIVE_PAGINATION - Error 1.: api error: read error")
+	srf.So(srf.fakeClient.responseBody.closed, should.Equal, 1)
 }
 
-func (this *SearchReaderFixture) TestReadAppError() {
-	this.fakeClient.Configure(responseWithMessage, 401, errors.New("test error"))
-	err := this.searchReader.Handle()
+func (srf *SearchReaderFixture) TestReadAppError() {
+	srf.fakeClient.Configure(responseWithMessage, 401, errors.New("test error"))
+	err := srf.searchReader.Handle()
 
-	this.So(err, should.BeError)
-	this.So(err.Error(), should.Equal, "test error: read error")
+	srf.So(err, should.BeError)
+	srf.So(err.Error(), should.Equal, "test error: read error")
 }
 
-func (this *SearchReaderFixture) TestReadInvalidJsonError() {
-	this.fakeClient.Configure(responseInvalidJson, 200, nil)
-	err := this.searchReader.Handle()
+func (srf *SearchReaderFixture) TestReadInvalidJsonError() {
+	srf.fakeClient.Configure(responseInvalidJson, 200, nil)
+	err := srf.searchReader.Handle()
 
-	this.So(err, should.BeError)
-	this.So(err.Error(), should.Equal, "invalid character 'e' in literal true (expecting 'r'): read error")
+	srf.So(err, should.BeError)
+	srf.So(err.Error(), should.Equal, "invalid character 'e' in literal true (expecting 'r'): read error")
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
