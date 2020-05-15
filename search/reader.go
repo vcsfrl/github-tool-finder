@@ -15,7 +15,7 @@ type HTTPClient interface {
 	Do(r *http.Request) (*http.Response, error)
 }
 
-type SearchReader struct {
+type RepositoryReader struct {
 	query    string
 	total    int
 	pageSize int
@@ -23,26 +23,26 @@ type SearchReader struct {
 	output   chan *Repository
 }
 
-func (sr *SearchReader) Close() error {
+func (sr *RepositoryReader) Close() error {
 	close(sr.output)
 
 	return nil
 }
 
-func (sr *SearchReader) Handle() error {
+func (sr *RepositoryReader) Handle() error {
 	defer sr.Close()
 	sr.adjustPageSize()
 
 	return sr.paginatedRead()
 }
 
-func (sr *SearchReader) adjustPageSize() {
+func (sr *RepositoryReader) adjustPageSize() {
 	if sr.pageSize > sr.total {
 		sr.pageSize = sr.total
 	}
 }
 
-func (sr *SearchReader) paginatedRead() error {
+func (sr *RepositoryReader) paginatedRead() error {
 	var (
 		result *SearchResponse
 		cursor string
@@ -58,7 +58,7 @@ func (sr *SearchReader) paginatedRead() error {
 	return nil
 }
 
-func (sr *SearchReader) calculateLimit(readIndex int) int {
+func (sr *RepositoryReader) calculateLimit(readIndex int) int {
 	limit := sr.pageSize
 	if readIndex+sr.pageSize > sr.total {
 		limit = sr.total - readIndex
@@ -67,7 +67,7 @@ func (sr *SearchReader) calculateLimit(readIndex int) int {
 	return limit
 }
 
-func (sr *SearchReader) findCursor(previousResult *SearchResponse, cursor string) string {
+func (sr *RepositoryReader) findCursor(previousResult *SearchResponse, cursor string) string {
 	if nil != previousResult {
 		cursor = previousResult.Data.Search.Edges[len(previousResult.Data.Search.Edges)-1].Cursor
 	}
@@ -75,7 +75,7 @@ func (sr *SearchReader) findCursor(previousResult *SearchResponse, cursor string
 	return cursor
 }
 
-func (sr *SearchReader) readRepositories(limit int, cursor string) *SearchResponse {
+func (sr *RepositoryReader) readRepositories(limit int, cursor string) *SearchResponse {
 	result := &SearchResponse{}
 	reader, err := sr.repositoryQueryReader(sr.buildQl(limit, cursor))
 
@@ -88,7 +88,7 @@ func (sr *SearchReader) readRepositories(limit int, cursor string) *SearchRespon
 	return result
 }
 
-func (sr *SearchReader) sendResult(result *SearchResponse) error {
+func (sr *RepositoryReader) sendResult(result *SearchResponse) error {
 	if done, err := sr.getErrors(result); done {
 		return err
 	}
@@ -101,7 +101,7 @@ func (sr *SearchReader) sendResult(result *SearchResponse) error {
 	return nil
 }
 
-func (sr *SearchReader) decodeRepositories(reader io.Reader, result *SearchResponse, err error) {
+func (sr *RepositoryReader) decodeRepositories(reader io.Reader, result *SearchResponse, err error) {
 	if nil != err {
 		result.Message = err.Error()
 		return
@@ -115,7 +115,7 @@ func (sr *SearchReader) decodeRepositories(reader io.Reader, result *SearchRespo
 	}
 }
 
-func (sr *SearchReader) repositoryQueryReader(query string) (io.ReadCloser, error) {
+func (sr *RepositoryReader) repositoryQueryReader(query string) (io.ReadCloser, error) {
 	request, _ := http.NewRequest("POST", "", strings.NewReader(query))
 	response, err := sr.client.Do(request)
 
@@ -126,7 +126,7 @@ func (sr *SearchReader) repositoryQueryReader(query string) (io.ReadCloser, erro
 	return response.Body, nil
 }
 
-func (sr *SearchReader) buildQl(limit int, cursor string) string {
+func (sr *RepositoryReader) buildQl(limit int, cursor string) string {
 	if cursor != "" {
 		cursor = fmt.Sprintf(", after: \\\"%s\\\"", cursor)
 	}
@@ -134,7 +134,7 @@ func (sr *SearchReader) buildQl(limit int, cursor string) string {
 	return fmt.Sprintf(repoSearchQuery, sr.query, limit, cursor)
 }
 
-func (sr *SearchReader) getErrors(result *SearchResponse) (bool, error) {
+func (sr *RepositoryReader) getErrors(result *SearchResponse) (bool, error) {
 	if result.Message != "" {
 		return true, fmt.Errorf("%s: %w", result.Message, ErrRead)
 	}
@@ -147,7 +147,7 @@ func (sr *SearchReader) getErrors(result *SearchResponse) (bool, error) {
 	return false, nil
 }
 
-func (sr *SearchReader) wrapErrors(result *SearchResponse) error {
+func (sr *RepositoryReader) wrapErrors(result *SearchResponse) error {
 	err := fmt.Errorf("api error: %w", ErrRead)
 
 	for _, resultErr := range result.Errors {
@@ -157,8 +157,8 @@ func (sr *SearchReader) wrapErrors(result *SearchResponse) error {
 	return err
 }
 
-func NewSearchReader(query string, total int, output chan *Repository, client HTTPClient) *SearchReader {
-	return &SearchReader{query: query, total: total, output: output, client: client, pageSize: 100}
+func NewRepositoryReader(query string, total int, output chan *Repository, client HTTPClient) *RepositoryReader {
+	return &RepositoryReader{query: query, total: total, output: output, client: client, pageSize: 100}
 }
 
 const repoSearchQuery = "{\"query\":\"query SearchRepositories {\\n" +

@@ -23,14 +23,14 @@ type SearchReaderFixture struct {
 
 	fakeClient   *FakeHTTPClient
 	output       chan *Repository
-	searchReader *SearchReader
+	searchReader *RepositoryReader
 }
 
 func (srf *SearchReaderFixture) Setup() {
 	srf.output = make(chan *Repository, 10)
 	srf.fakeClient = &FakeHTTPClient{}
 
-	srf.searchReader = NewSearchReader("test:test test", 1, srf.output, srf.fakeClient)
+	srf.searchReader = NewRepositoryReader("test:test test", 1, srf.output, srf.fakeClient)
 	srf.searchReader.pageSize = 1
 }
 

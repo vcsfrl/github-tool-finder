@@ -16,7 +16,7 @@ func main() {
 
 	transport := make(chan *search.Repository, 1024*1024)
 	client := search.NewAuthenticationClientV4(http.DefaultClient, token)
-	reader := search.NewSearchReader(query, total, transport, client)
+	reader := search.NewRepositoryReader(query, total, transport, client)
 	writer := search.NewCsvWriter(transport, os.Stdout)
 
 	var wg sync.WaitGroup
