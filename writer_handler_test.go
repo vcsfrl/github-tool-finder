@@ -52,7 +52,6 @@ func (whf *WriterHandlerFixture) assertHeaderMatchesRecord() {
 
 	whf.So(header, should.Equal, "Name,NameWithOwner,Owner,Description,URL,ForkCount,Stargazers,Watchers,HomepageURL,LicenseInfo,MentionableUsers,MirrorURL,IsMirror,PrimaryLanguage,Parent,CreatedAt,UpdatedAt")
 	whf.So(record, should.Equal, "Name1,NameWithOwner1,Owner1,Description1,URL1,2,3,4,HomepageURL1,LicenseInfo1,5,MirrorURL1,false,PrimaryLanguage1,Parent1,2020-04-15 20:01:25 +0000 UTC,2020-05-15 20:01:25 +0000 UTC")
-
 }
 
 func (whf *WriterHandlerFixture) TestAllRepositoriesWritten() {
@@ -73,7 +72,6 @@ func (whf *WriterHandlerFixture) sendEnvelopes(count int) {
 }
 
 func (whf *WriterHandlerFixture) createRepository(index int64) *Repository {
-
 	created, _ := time.Parse(time.RFC3339, "2020-04-15T20:01:25Z")
 	updated, _ := time.Parse(time.RFC3339, "2020-05-15T20:01:25Z")
 	return &Repository{
