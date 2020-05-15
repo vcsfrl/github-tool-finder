@@ -74,6 +74,7 @@ func (whf *WriterHandlerFixture) sendEnvelopes(count int) {
 func (whf *WriterHandlerFixture) createRepository(index int64) *Repository {
 	created, _ := time.Parse(time.RFC3339, "2020-04-15T20:01:25Z")
 	updated, _ := time.Parse(time.RFC3339, "2020-05-15T20:01:25Z")
+
 	return &Repository{
 		Description:   fmt.Sprintf("Description%d", index),
 		Name:          fmt.Sprintf("Name%d", index),
@@ -127,8 +128,8 @@ func NewReadWriteSpyBuffer(value string) *ReadWriteSpyBuffer {
 	}
 }
 
-func (this *ReadWriteSpyBuffer) Close() error {
-	this.closed++
+func (rb *ReadWriteSpyBuffer) Close() error {
+	rb.closed++
 
 	return nil
 }
