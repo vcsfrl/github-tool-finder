@@ -13,13 +13,13 @@ type CsvWriter struct {
 	writer *csv.Writer
 }
 
-func (cw *CsvWriter) Handle() {
+func (cw *CsvWriter) Handle() error {
 	for repository := range cw.input {
 		cw.writeRepository(repository)
 	}
 
 	cw.writer.Flush()
-	cw.closer.Close()
+	return cw.closer.Close()
 }
 
 func (cw *CsvWriter) writeRepository(repository *Repository) {

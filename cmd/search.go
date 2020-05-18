@@ -34,7 +34,9 @@ func main() {
 		wg.Done()
 	}()
 
-	writer.Handle()
+	if err := writer.Handle(); nil != err {
+		log.Fatal(err)
+	}
 	wg.Wait()
 }
 
